@@ -1,0 +1,2 @@
+selector,cases,near_best_count,mean_regret_pct,max_regret_pct,fallback_count,q8_clustered_fixed
+query_count_aware_h4_8,8,8,0.0,0.0,0,True

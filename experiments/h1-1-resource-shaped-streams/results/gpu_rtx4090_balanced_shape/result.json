@@ -1,0 +1,66 @@
+{
+  "status": "ok",
+  "matrix_size": 2048,
+  "vector_rows": 65536,
+  "vector_cols": 256,
+  "warmup": 20,
+  "iters": 100,
+  "full": {
+    "full_gemm_ms": 0.12240896224975586,
+    "elementwise_ms": 0.10791935920715331,
+    "reduction_ms": 0.015471040010452271,
+    "sum_isolated_ms": 0.24579936146736145,
+    "serial_ms": 0.24803327560424804,
+    "multistream_ms": 0.2429952049255371,
+    "stream_speedup": 1.020733210271597,
+    "overlap_ratio": 0.011408314997582658
+  },
+  "chunks": [
+    {
+      "chunks": 2,
+      "chunked_gemm_ms": 0.1313792037963867,
+      "chunked_serial_ms": 0.2663228797912598,
+      "chunked_multistream_ms": 0.25150495529174804,
+      "stream_speedup": 1.058917028025642,
+      "overlap_ratio": 0.012814117868154673,
+      "chunk_overhead": 1.0732809214437133
+    },
+    {
+      "chunks": 4,
+      "chunked_gemm_ms": 0.11527168273925781,
+      "chunked_serial_ms": 0.22855680465698242,
+      "chunked_multistream_ms": 0.2272652816772461,
+      "stream_speedup": 1.0056828872857513,
+      "overlap_ratio": 0.04775287379616999,
+      "chunk_overhead": 0.9416931621727535
+    },
+    {
+      "chunks": 8,
+      "chunked_gemm_ms": 0.1861631965637207,
+      "chunked_serial_ms": 0.2568988800048828,
+      "chunked_multistream_ms": 0.329697265625,
+      "stream_speedup": 0.7791962712153075,
+      "overlap_ratio": -0.06507328655908573,
+      "chunk_overhead": 1.5208297917262346
+    },
+    {
+      "chunks": 16,
+      "chunked_gemm_ms": 0.44835838317871096,
+      "chunked_serial_ms": 0.48154624938964846,
+      "chunked_multistream_ms": 0.5875814437866211,
+      "stream_speedup": 0.8195395795455394,
+      "overlap_ratio": -0.027691639891119113,
+      "chunk_overhead": 3.662790492937172
+    }
+  ],
+  "best_chunk_by_stream_speedup": {
+    "chunks": 2,
+    "chunked_gemm_ms": 0.1313792037963867,
+    "chunked_serial_ms": 0.2663228797912598,
+    "chunked_multistream_ms": 0.25150495529174804,
+    "stream_speedup": 1.058917028025642,
+    "overlap_ratio": 0.012814117868154673,
+    "chunk_overhead": 1.0732809214437133
+  },
+  "finite_outputs": true
+}

@@ -1,0 +1,2 @@
+order_mode,selected_tokens,key_dim,value_dim,torch_flat_total_ms,torch_gather_k_ms,torch_gather_v_ms,torch_score_softmax_ms,torch_value_ms,best_triton_ssv_ms,best_triton_vs_flat_speedup,best_variant,order_span_mean,order_span_p95,monotonic_fraction
+clustered_segment,256,128,128,0.12857343673706054,0.013209600448608399,0.013025280237197876,0.06219776153564453,0.03067903995513916,0.021422080993652344,6.001911615176817,"{""block_d"": 64, ""block_n"": 256, ""block_v"": 128, ""warps"": 4}",15.101961135864258,92.40011596679688,1.0

@@ -1,0 +1,27 @@
+{
+  "status": "ok",
+  "cases": 8,
+  "threshold": 0.15,
+  "shared_limit": 101376,
+  "observed_failed_rows": 8,
+  "static_rejected_failed_rows": 8,
+  "static_rejected_failed_fraction": 1.0,
+  "selector_summary": [
+    {
+      "selector": "global_mean_latency_h4_6",
+      "cases": 8,
+      "near_best_count": 7,
+      "mean_regret_pct": 9.92120159712145,
+      "max_regret_pct": 27.436280720794116,
+      "fallback_count": 0
+    },
+    {
+      "selector": "order_aware_rule_table_h4_6",
+      "cases": 8,
+      "near_best_count": 7,
+      "mean_regret_pct": 7.785284924386401,
+      "max_regret_pct": 18.721887205773147,
+      "fallback_count": 0
+    }
+  ]
+}

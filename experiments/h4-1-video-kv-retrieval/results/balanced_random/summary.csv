@@ -1,0 +1,2 @@
+segment_counts,selected_tokens,selection_fraction,torch_segment_loop_ms,torch_flat_total_ms,torch_gather_ms,torch_score_ms,triton_fused_ms,triton_vs_segment_speedup,triton_vs_flat_speedup,gather_fraction_of_flat
+"32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32",1024,0.125,1.4908006286621094,0.028897280693054198,0.012595200538635254,0.013397760391235351,0.023159680366516115,64.3705182916723,1.2477409116074596,0.43586109961075536

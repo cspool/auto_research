@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H3.4 No-Padding Triton Expert Matmul</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    code {
+      background: #eef1f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H3.4: no-padding Triton expert matmul</h1>
+  <p class="subtitle">Irregular grouped/tiled MoE FFN · RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> H3.4 强支持 no-padding grouped/tiled expert matmul。
+    简单 Triton baseline 在三组分布上都快于 expert loop 和 padded bmm；skewed
+    分布收益最大，说明避免 padding waste 是关键。
+  </div>
+
+  <h2>结果</h2>
+  <table>
+    <tr>
+      <th>分布</th>
+      <th>Padding</th>
+      <th>Expert loop</th>
+      <th>Padded bmm</th>
+      <th>No-pad Triton</th>
+      <th>vs loop</th>
+      <th>vs bmm</th>
+    </tr>
+    <tr>
+      <td>64,64,64,64</td>
+      <td>1.00x</td>
+      <td>0.2189 ms</td>
+      <td>0.1914 ms</td>
+      <td>0.1709 ms</td>
+      <td>1.28x</td>
+      <td>1.12x</td>
+    </tr>
+    <tr>
+      <td>160,64,24,8</td>
+      <td>2.50x</td>
+      <td>0.2421 ms</td>
+      <td>0.2135 ms</td>
+      <td>0.1634 ms</td>
+      <td>1.48x</td>
+      <td>1.31x</td>
+    </tr>
+    <tr>
+      <td>16,16,16,16</td>
+      <td>1.00x</td>
+      <td>0.2154 ms</td>
+      <td>0.1735 ms</td>
+      <td>0.1550 ms</td>
+      <td>1.39x</td>
+      <td>1.12x</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    H3.4 保留 MoE expert 的语义段，但只调度有效 token tiles。它既不像 expert streams
+    那样产生多个小 launch，也不像 padded bmm 那样对 skewed routing 做无用计算。
+    这给出了目前最清晰的 MoE 实验路径：semantic segments → no-padding tiled
+    micro-ops → runtime/compiler metadata。
+  </p>
+</main>
+</body>
+</html>

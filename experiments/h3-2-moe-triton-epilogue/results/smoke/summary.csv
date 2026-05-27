@@ -1,0 +1,2 @@
+block_size,warps,serial_ms,concurrent_ms,grouped_ms,concurrent_vs_serial_speedup,grouped_vs_serial_speedup,grouped_vs_concurrent_speedup,grouped_vs_torch_speedup
+256,4,0.1634666621685028,0.3054719964663188,0.034815999368826546,0.5351281428722602,4.695159269645068,8.773897116388147,7.96354203039025

@@ -1,0 +1,9 @@
+metric,value
+status,cpu_dry_run_only
+device,cpu
+note,CPU run validates code path only; it is not evidence for GPU stream concurrency.
+matrix_size,128
+vector_rows,1024
+vector_cols,64
+serial_ms,0.08880267463003595
+finite_outputs,True

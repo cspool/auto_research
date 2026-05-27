@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H4.3 KV Score-Softmax-Value</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H4.3: sparse KV score-softmax-value</h1>
+  <p class="subtitle">Single-query sparse attention fragment · RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> 加入 softmax 和 V aggregation 后，fused Triton
+    路径比 flat PyTorch eager 快 5.78x 到 6.79x。H4 的“movement-compute fusion”
+    信号明显增强。
+  </div>
+
+  <h2>结果</h2>
+  <table>
+    <tr>
+      <th>Order</th>
+      <th>Flat PyTorch</th>
+      <th>Best Triton</th>
+      <th>Speedup</th>
+      <th>Best variant</th>
+      <th>Mean span</th>
+    </tr>
+    <tr>
+      <td>random segment</td>
+      <td>0.1402 ms</td>
+      <td>0.0207 ms</td>
+      <td>6.79x</td>
+      <td>N256 D64 V64 W8</td>
+      <td>95.1</td>
+    </tr>
+    <tr>
+      <td>random sorted</td>
+      <td>0.1250 ms</td>
+      <td>0.0216 ms</td>
+      <td>5.78x</td>
+      <td>N256 D64 V32 W4</td>
+      <td>15.9</td>
+    </tr>
+    <tr>
+      <td>random shuffled</td>
+      <td>0.1285 ms</td>
+      <td>0.0210 ms</td>
+      <td>6.12x</td>
+      <td>N256 D64 V128 W4</td>
+      <td>1312.0</td>
+    </tr>
+    <tr>
+      <td>clustered segment</td>
+      <td>0.1286 ms</td>
+      <td>0.0214 ms</td>
+      <td>6.00x</td>
+      <td>N256 D64 V128 W4</td>
+      <td>15.1</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    score-only retrieval 里 fused kernel 只拿到约 1.x 的收益；加入 softmax 和 value
+    reduction 后，框架 materialization 与多阶段 eager 调度的成本被放大。下一步适合做
+    H4 outer-loop synthesis，然后决定是否继续实现 multi-block online softmax。
+  </p>
+</main>
+</body>
+</html>

@@ -1,0 +1,192 @@
+{
+  "status": "ok",
+  "matrix_size": 1024,
+  "num_elements": 67108864,
+  "scale": 0.75,
+  "warmup": 20,
+  "iters": 60,
+  "gemm_ms": 0.02109439969062805,
+  "torch_unfused_ms": 1.4640127817789714,
+  "torch_serial_ms": 1.4462292989095051,
+  "torch_concurrent_ms": 1.4439584096272786,
+  "torch_stream_speedup": 1.0015726833038168,
+  "torch_overlap_ratio": 0.02770761084166451,
+  "variants": [
+    {
+      "block_size": 128,
+      "warps": 4,
+      "fused_ms": 0.5886293411254883,
+      "serial_ms": 0.5905237197875977,
+      "concurrent_ms": 0.5904895782470703,
+      "stream_speedup": 1.0000578190399714,
+      "overlap_ratio": 0.0315457005877795,
+      "nominal_fused_gbps": 912.0695733132779
+    },
+    {
+      "block_size": 128,
+      "warps": 8,
+      "fused_ms": 0.5904383977254232,
+      "serial_ms": 0.6108501434326172,
+      "concurrent_ms": 0.6055423736572265,
+      "stream_speedup": 1.0087653152054974,
+      "overlap_ratio": 0.009795752221526732,
+      "nominal_fused_gbps": 909.2750642035071
+    },
+    {
+      "block_size": 256,
+      "warps": 4,
+      "fused_ms": 0.6033066431681315,
+      "serial_ms": 0.597332255045573,
+      "concurrent_ms": 0.5733887990315755,
+      "stream_speedup": 1.0417578021308347,
+      "overlap_ratio": 0.08169788377295073,
+      "nominal_fused_gbps": 889.8806570084179
+    },
+    {
+      "block_size": 256,
+      "warps": 8,
+      "fused_ms": 0.5614208221435547,
+      "serial_ms": 0.5966293334960937,
+      "concurrent_ms": 0.5726207733154297,
+      "stream_speedup": 1.0419275047282275,
+      "overlap_ratio": 0.01698573384502844,
+      "nominal_fused_gbps": 956.2718211094826
+    },
+    {
+      "block_size": 512,
+      "warps": 4,
+      "fused_ms": 0.5714431762695312,
+      "serial_ms": 0.5905749638875325,
+      "concurrent_ms": 0.5726037343343099,
+      "stream_speedup": 1.0313851071441498,
+      "overlap_ratio": 0.033641481037802956,
+      "nominal_fused_gbps": 939.5000838137148
+    },
+    {
+      "block_size": 512,
+      "warps": 8,
+      "fused_ms": 0.6689594904581706,
+      "serial_ms": 0.7259477615356446,
+      "concurrent_ms": 0.7421141306559245,
+      "stream_speedup": 0.9782157912745967,
+      "overlap_ratio": -0.0754437316423211,
+      "nominal_fused_gbps": 802.5462223912795
+    },
+    {
+      "block_size": 1024,
+      "warps": 4,
+      "fused_ms": 0.6696677525838216,
+      "serial_ms": 0.7149738947550456,
+      "concurrent_ms": 0.7229098637898763,
+      "stream_speedup": 0.9890221873675562,
+      "overlap_ratio": -0.046539480209758066,
+      "nominal_fused_gbps": 801.6974237277468
+    },
+    {
+      "block_size": 1024,
+      "warps": 8,
+      "fused_ms": 0.6977706909179687,
+      "serial_ms": 0.7000234603881836,
+      "concurrent_ms": 0.7052005132039388,
+      "stream_speedup": 0.9926587506406734,
+      "overlap_ratio": 0.01900854219126069,
+      "nominal_fused_gbps": 769.4088029030092
+    },
+    {
+      "block_size": 2048,
+      "warps": 4,
+      "fused_ms": 0.639300282796224,
+      "serial_ms": 0.6764885584513346,
+      "concurrent_ms": 0.5919914881388346,
+      "stream_speedup": 1.1427335899341236,
+      "overlap_ratio": 0.10357926276818452,
+      "nominal_fused_gbps": 839.7789371401338
+    },
+    {
+      "block_size": 2048,
+      "warps": 8,
+      "fused_ms": 0.5871162414550781,
+      "serial_ms": 0.611072031656901,
+      "concurrent_ms": 0.6056447982788086,
+      "stream_speedup": 1.0089610831192082,
+      "overlap_ratio": 0.004218674737528905,
+      "nominal_fused_gbps": 914.4201336850216
+    },
+    {
+      "block_size": 4096,
+      "warps": 4,
+      "fused_ms": 0.6081706364949544,
+      "serial_ms": 0.6175914764404297,
+      "concurrent_ms": 0.5970944086710612,
+      "stream_speedup": 1.034328018269319,
+      "overlap_ratio": 0.051124130000182455,
+      "nominal_fused_gbps": 882.7636189312374
+    },
+    {
+      "block_size": 4096,
+      "warps": 8,
+      "fused_ms": 0.6159701029459635,
+      "serial_ms": 0.6536730448404948,
+      "concurrent_ms": 0.5954015731811524,
+      "stream_speedup": 1.0978691933042863,
+      "overlap_ratio": 0.06539829057028079,
+      "nominal_fused_gbps": 871.58599002182
+    },
+    {
+      "block_size": 8192,
+      "warps": 4,
+      "fused_ms": 0.589465586344401,
+      "serial_ms": 0.6178474426269531,
+      "concurrent_ms": 0.6015535990397135,
+      "stream_speedup": 1.0270862706386434,
+      "overlap_ratio": 0.014751027255819782,
+      "nominal_fused_gbps": 910.7756660222195
+    },
+    {
+      "block_size": 8192,
+      "warps": 8,
+      "fused_ms": 0.6219776153564454,
+      "serial_ms": 0.6473898569742839,
+      "concurrent_ms": 0.6099456151326498,
+      "stream_speedup": 1.061389476229763,
+      "overlap_ratio": 0.051512737515095885,
+      "nominal_fused_gbps": 863.1675782935177
+    }
+  ],
+  "best_isolated_variant": {
+    "block_size": 256,
+    "warps": 8,
+    "fused_ms": 0.5614208221435547,
+    "serial_ms": 0.5966293334960937,
+    "concurrent_ms": 0.5726207733154297,
+    "stream_speedup": 1.0419275047282275,
+    "overlap_ratio": 0.01698573384502844,
+    "nominal_fused_gbps": 956.2718211094826
+  },
+  "best_concurrent_variant": {
+    "block_size": 512,
+    "warps": 4,
+    "fused_ms": 0.5714431762695312,
+    "serial_ms": 0.5905749638875325,
+    "concurrent_ms": 0.5726037343343099,
+    "stream_speedup": 1.0313851071441498,
+    "overlap_ratio": 0.033641481037802956,
+    "nominal_fused_gbps": 939.5000838137148
+  },
+  "best_stream_speedup_variant": {
+    "block_size": 2048,
+    "warps": 4,
+    "fused_ms": 0.639300282796224,
+    "serial_ms": 0.6764885584513346,
+    "concurrent_ms": 0.5919914881388346,
+    "stream_speedup": 1.1427335899341236,
+    "overlap_ratio": 0.10357926276818452,
+    "nominal_fused_gbps": 839.7789371401338
+  },
+  "best_concurrent_differs_from_best_isolated": true,
+  "best_stream_speedup_differs_from_best_concurrent": true,
+  "validation": {
+    "finite_outputs": true,
+    "max_abs_diff_vs_torch": 0.0078125
+  }
+}

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H3.1 MoE Semantic Concurrency</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #cf222e;
+      background: #fff1f3;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    code {
+      background: #eef1f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H3.1: MoE 专家语义并发是否自动变成 latency？</h1>
+  <p class="subtitle">Tiny single-request MoE FFN · RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> naive PyTorch expert streams 失败。MoE experts
+    是正确的语义分解单位，但只把每个 expert 放到一个 CUDA stream 上，不能产生
+    单请求 latency 收益。
+  </div>
+
+  <h2>结果</h2>
+  <table>
+    <tr>
+      <th>分布</th>
+      <th>Serial</th>
+      <th>Concurrent</th>
+      <th>Speedup</th>
+      <th>Overlap</th>
+    </tr>
+    <tr>
+      <td>64,64,64,64</td>
+      <td>0.2052 ms</td>
+      <td>0.3110 ms</td>
+      <td>0.6596x</td>
+      <td>-0.7784</td>
+    </tr>
+    <tr>
+      <td>160,64,24,8</td>
+      <td>0.2192 ms</td>
+      <td>0.3226 ms</td>
+      <td>0.6795x</td>
+      <td>-0.6065</td>
+    </tr>
+    <tr>
+      <td>16,16,16,16</td>
+      <td>0.2065 ms</td>
+      <td>0.3028 ms</td>
+      <td>0.6818x</td>
+      <td>-0.7255</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    H3.1 把 H3 从“模型语义天然并发”修正为更可执行的版本：模型语义能告诉我们
+    哪些工作应该拆，但 runtime 真正能利用它们之前，还需要 compiler-visible
+    micro-operators、grouped kernels 或显式 spatial/resource control。
+  </p>
+
+  <p>
+    下一步应该做 H3.2：把 expert token tiles / epilogue 降到 Triton 层，
+    继承 H2 的 variant metadata + concurrent latency 方法，而不是停留在
+    PyTorch expert loop。
+  </p>
+</main>
+</body>
+</html>

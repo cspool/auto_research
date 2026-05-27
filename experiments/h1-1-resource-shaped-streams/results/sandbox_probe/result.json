@@ -1,0 +1,4 @@
+{
+  "status": "skipped_no_cuda",
+  "note": "CUDA is unavailable; no GPU result was produced."
+}

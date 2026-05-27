@@ -1,0 +1,2 @@
+token_counts,hidden_size,ffn_size,actual_tokens,padded_tokens,padding_overhead,expert_loop_ms,grouped_bmm_ms,grouped_speedup
+"160,64,24,8",2048,4096,256,640,2.5,0.24094719886779786,0.22321679592132568,1.0794313119373034

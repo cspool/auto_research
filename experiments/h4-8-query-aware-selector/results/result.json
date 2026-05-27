@@ -1,0 +1,15 @@
+{
+  "status": "ok",
+  "threshold": 0.15,
+  "baseline_order_aware_mean_regret_pct": 7.785284924386401,
+  "baseline_order_aware_near_best_count": 7,
+  "selector_summary": {
+    "selector": "query_count_aware_h4_8",
+    "cases": 8,
+    "near_best_count": 8,
+    "mean_regret_pct": 0.0,
+    "max_regret_pct": 0.0,
+    "fallback_count": 0,
+    "q8_clustered_fixed": true
+  }
+}

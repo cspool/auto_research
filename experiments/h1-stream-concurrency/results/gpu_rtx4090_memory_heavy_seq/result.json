@@ -1,0 +1,22 @@
+{
+  "status": "ok",
+  "device": "cuda",
+  "matrix_size": 1024,
+  "vector_rows": 262144,
+  "vector_cols": 256,
+  "warmup": 20,
+  "iters": 100,
+  "isolated_ms": {
+    "compute_gemm": 0.020918080806732176,
+    "elementwise": 0.42478591918945313,
+    "reduction": 0.14194592475891113
+  },
+  "sum_isolated_ms": 0.5876499247550965,
+  "serial_ms": 0.5929574584960937,
+  "multistream_ms": 0.5882675170898437,
+  "cuda_graph_serial_ms": 0.5880096054077149,
+  "overlap_ratio": -0.0010509528015418823,
+  "serial_speedup": 1.0079724636666174,
+  "graph_speedup": 1.0084145786784353,
+  "finite_outputs": true
+}

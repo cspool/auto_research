@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H3.2 MoE Triton Epilogue</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    code {
+      background: #eef1f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H3.2: MoE expert epilogue 降到 Triton 后会怎样？</h1>
+  <p class="subtitle">Grouped expert micro-operator · RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> H3 得到强支持，但形式被修正：MoE experts
+    不应该作为多个 PyTorch/stream kernels 调度，而应该被降成 grouped
+    compiler-visible micro-operator。Grouped Triton epilogue 比 PyTorch loop 快
+    14x 到 19x。
+  </div>
+
+  <h2>结果</h2>
+  <table>
+    <tr>
+      <th>分布</th>
+      <th>PyTorch loop</th>
+      <th>Best grouped</th>
+      <th>vs PyTorch</th>
+      <th>vs Triton serial</th>
+      <th>vs Triton streams</th>
+    </tr>
+    <tr>
+      <td>64,64,64,64</td>
+      <td>0.2906 ms</td>
+      <td>0.0172 ms</td>
+      <td>16.88x</td>
+      <td>7.90x</td>
+      <td>17.72x</td>
+    </tr>
+    <tr>
+      <td>160,64,24,8</td>
+      <td>0.2560 ms</td>
+      <td>0.0135 ms</td>
+      <td>18.98x</td>
+      <td>7.40x</td>
+      <td>16.37x</td>
+    </tr>
+    <tr>
+      <td>16,16,16,16</td>
+      <td>0.2480 ms</td>
+      <td>0.0175 ms</td>
+      <td>14.15x</td>
+      <td>7.48x</td>
+      <td>16.95x</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    H3.1 的负结果不是说 MoE 语义无用，而是说明 expert loop 的实现层次太高。
+    H3.2 显示，把 expert epilogue 合并成一个 grouped Triton kernel 后，语义分解
+    才变成了可编译、可调度、低 launch overhead 的执行单位。
+  </p>
+
+  <p>
+    这也修正了“并发”的含义：有些模型语义并行，最佳实现不是同时发多个小 kernel，
+    而是把多个语义片段折叠成一个 compiler-visible grouped kernel。
+  </p>
+</main>
+</body>
+</html>

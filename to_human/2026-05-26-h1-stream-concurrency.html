@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H1 Stream Concurrency Report</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f6f7f9;
+      line-height: 1.6;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #d8dee4;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    .bars {
+      display: grid;
+      grid-template-columns: 150px 1fr 80px;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+      max-width: 760px;
+    }
+    .track {
+      position: relative;
+      height: 18px;
+      background: #eaeef2;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar {
+      height: 100%;
+      background: #0969da;
+    }
+    .bar.neutral {
+      background: #6e7781;
+    }
+    code {
+      background: #eef1f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H1: CUDA stream 并发是否足够？</h1>
+  <p class="subtitle">RTX 4090 microbenchmark · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> H1 获得初步支持。三组单请求算子组合中，naive
+    multi-stream 只带来 -0.3% 到 +4.3% 的 serial speedup，最佳 overlap ratio
+    约 6.0%。这更像 launch/tail overlap，而不是强算子并发。
+  </div>
+
+  <h2>环境</h2>
+  <ul>
+    <li>GPU: NVIDIA GeForce RTX 4090</li>
+    <li>PyTorch: 2.11.0+cu128, CUDA build 12.8</li>
+    <li>默认沙箱不可见 <code>/dev/nvidia*</code>；GPU 结果在沙箱外执行。</li>
+  </ul>
+
+  <h2>结果表</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Run</th>
+        <th>Serial ms</th>
+        <th>Multi-stream ms</th>
+        <th>CUDA Graph serial ms</th>
+        <th>Overlap ratio</th>
+        <th>Serial speedup</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>default</td>
+        <td>0.2308</td>
+        <td>0.2212</td>
+        <td>0.2351</td>
+        <td>0.0599</td>
+        <td>1.0433x</td>
+      </tr>
+      <tr>
+        <td>memory-heavy</td>
+        <td>0.5930</td>
+        <td>0.5883</td>
+        <td>0.5880</td>
+        <td>-0.0011</td>
+        <td>1.0080x</td>
+      </tr>
+      <tr>
+        <td>compute-heavy</td>
+        <td>0.9558</td>
+        <td>0.9591</td>
+        <td>0.9387</td>
+        <td>0.0060</td>
+        <td>0.9966x</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Speedup View</h2>
+  <div class="bars">
+    <div>default</div>
+    <div class="track"><div class="bar" style="width: 43%;"></div></div>
+    <div>+4.3%</div>
+    <div>memory-heavy</div>
+    <div class="track"><div class="bar neutral" style="width: 8%;"></div></div>
+    <div>+0.8%</div>
+    <div>compute-heavy</div>
+    <div class="track"><div class="bar neutral" style="width: 3%;"></div></div>
+    <div>-0.3%</div>
+  </div>
+
+  <h2>解释</h2>
+  <p>
+    结果和 local-notes 中 uShare、Bullet、Infera 的判断一致：CUDA streams
+    给了合法并发表达，但并不保证 SM 内/SM 间出现有用的空间共享。若某个 dominant
+    kernel 已经占满关键资源，其他 stream 最多得到尾部重叠或很小的调度收益。
+  </p>
+
+  <h2>下一步</h2>
+  <p>
+    H1.1 应测试 resource-shaped co-location：例如把 GEMM 切成更小 tile、
+    对比 stream priority，若能找到可控 API，再测试 SM partition 或类似 uShare 的
+    launch/block shaping。目标是验证“控制资源形状”是否比 naive stream 更关键。
+  </p>
+</main>
+</body>
+</html>

@@ -1,0 +1,2 @@
+block_m,block_n,block_k,warps,row_tiles,triton_no_pad_ms,triton_vs_loop_speedup,triton_vs_bmm_speedup
+2,32,32,4,6,0.05932799975077311,2.6810499799737184,0.6731391799806836

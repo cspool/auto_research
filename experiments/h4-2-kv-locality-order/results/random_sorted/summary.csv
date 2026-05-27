@@ -1,0 +1,2 @@
+order_mode,selected_tokens,torch_flat_total_ms,torch_gather_ms,torch_score_ms,gather_fraction_of_flat,best_triton_fused_ms,best_triton_vs_flat_speedup,best_variant,order_span_mean,order_span_p95,monotonic_fraction
+random_sorted,1024,0.029429759979248047,0.012369920015335083,0.012778879404067993,0.4203201121605323,0.0212608003616333,1.3842263451359171,"{""block_d"": 64, ""block_m"": 16, ""block_q"": 8, ""warps"": 8}",7.987292289733887,23.0,1.0

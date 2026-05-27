@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H4.6 Runtime Variant Table</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #8250df;
+      background: #f6f0ff;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    code {
+      background: #f6f8fa;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H4.6: runtime variant table</h1>
+  <p class="subtitle">Grouped sparse attention selector · H4.5 artifacts · 2026-05-27</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> H4.6 把 H4.5 的 kernel 结果推进到编译/运行时层。
+    静态 shared-memory proxy 拒绝了 4/4 个 OOR rows；全局平均延迟表在 3/4 个
+    order 内选到 10% 以内；加入 order stats 的规则表 4/4 命中 measured best。
+  </div>
+
+  <h2>资源过滤</h2>
+  <table>
+    <tr>
+      <th>Variant</th>
+      <th>Proxy</th>
+      <th>Limit</th>
+      <th>Observed</th>
+    </tr>
+    <tr>
+      <td>N256 D64 V64 Q4 W4</td>
+      <td>131072</td>
+      <td>101376</td>
+      <td>4/4 OutOfResources</td>
+    </tr>
+  </table>
+  <p>
+    Proxy: <code>BLOCK_N * BLOCK_Q * (BLOCK_D + BLOCK_V)</code>。它不是完整
+    shared-memory byte estimator，但足以在当前 H4.5 family 中过滤已知坏 variant。
+  </p>
+
+  <h2>选择质量</h2>
+  <table>
+    <tr>
+      <th>Selector</th>
+      <th>Near-best orders</th>
+      <th>Mean regret</th>
+      <th>Max regret</th>
+      <th>Invalid selections</th>
+    </tr>
+    <tr>
+      <td>global mean latency</td>
+      <td>3/4</td>
+      <td>3.47%</td>
+      <td>12.06%</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>order-aware rule table</td>
+      <td>4/4</td>
+      <td>0.00%</td>
+      <td>0.00%</td>
+      <td>0</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    sorted order 是关键区分点。全局 mean table 选择 <code>N64 D64 V64 Q4 W4</code>，
+    它整体不错，但在 random sorted 上慢了 12.06%。加入
+    <code>order_span_mean</code>、<code>order_span_p95</code> 和
+    <code>monotonic_fraction</code> 后，规则表能选择
+    <code>N128 D128 V64 Q4 W4</code>，补上这个缺口。
+  </p>
+  <p>
+    下一步应该用 held-out shapes 测 H4.7，例如 Q=2/8、selected tokens=512/2048、
+    或 V=64/256。这样可以把 H4.6 从 retrospective table 推到更强的 compiler
+    selection 实验。
+  </p>
+</main>
+</body>
+</html>
+

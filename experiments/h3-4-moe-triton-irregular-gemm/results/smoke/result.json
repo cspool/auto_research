@@ -1,0 +1,47 @@
+{
+  "status": "ok",
+  "token_counts": [
+    4,
+    3,
+    2,
+    1
+  ],
+  "hidden_size": 128,
+  "ffn_size": 256,
+  "actual_tokens": 10,
+  "padded_tokens": 16,
+  "padding_overhead": 1.6,
+  "expert_loop_ms": 0.159061332543691,
+  "padded_bmm_ms": 0.039936001102129616,
+  "padded_bmm_speedup": 3.9829058532154575,
+  "variants": [
+    {
+      "block_m": 2,
+      "block_n": 32,
+      "block_k": 32,
+      "warps": 4,
+      "row_tiles": 6,
+      "triton_no_pad_ms": 0.05932799975077311,
+      "triton_vs_loop_speedup": 2.6810499799737184,
+      "triton_vs_bmm_speedup": 0.6731391799806836
+    }
+  ],
+  "best_triton_variant": {
+    "block_m": 2,
+    "block_n": 32,
+    "block_k": 32,
+    "warps": 4,
+    "row_tiles": 6,
+    "triton_no_pad_ms": 0.05932799975077311,
+    "triton_vs_loop_speedup": 2.6810499799737184,
+    "triton_vs_bmm_speedup": 0.6731391799806836
+  },
+  "best_triton_beats_loop": true,
+  "best_triton_beats_padded_bmm": false,
+  "validation": {
+    "finite_outputs": true,
+    "max_abs_diff_vs_loop": 1.52587890625e-05,
+    "max_ref_abs": 513.0,
+    "relative_max_abs_diff": 2.9744228192007796e-08
+  }
+}

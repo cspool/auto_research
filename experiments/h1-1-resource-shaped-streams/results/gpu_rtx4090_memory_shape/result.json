@@ -1,0 +1,66 @@
+{
+  "status": "ok",
+  "matrix_size": 1024,
+  "vector_rows": 262144,
+  "vector_cols": 256,
+  "warmup": 20,
+  "iters": 100,
+  "full": {
+    "full_gemm_ms": 0.020500481128692627,
+    "elementwise_ms": 0.4923289489746094,
+    "reduction_ms": 0.15520768165588378,
+    "sum_isolated_ms": 0.6680371117591859,
+    "serial_ms": 0.6078054428100585,
+    "multistream_ms": 0.597209587097168,
+    "stream_speedup": 1.0177422733020638,
+    "overlap_ratio": 0.10602333824763588
+  },
+  "chunks": [
+    {
+      "chunks": 2,
+      "chunked_gemm_ms": 0.04692768096923828,
+      "chunked_serial_ms": 0.6142566299438477,
+      "chunked_multistream_ms": 0.6186291122436524,
+      "stream_speedup": 0.9929319810314996,
+      "overlap_ratio": 0.10919956301482103,
+      "chunk_overhead": 2.289101444724531
+    },
+    {
+      "chunks": 4,
+      "chunked_gemm_ms": 0.10024959564208985,
+      "chunked_serial_ms": 0.6771711730957031,
+      "chunked_multistream_ms": 0.6074691009521485,
+      "stream_speedup": 1.1147417572915288,
+      "overlap_ratio": 0.18764336703533524,
+      "chunk_overhead": 4.890109408299679
+    },
+    {
+      "chunks": 8,
+      "chunked_gemm_ms": 0.19793056488037108,
+      "chunked_serial_ms": 0.6238000106811523,
+      "chunked_multistream_ms": 0.6291667175292969,
+      "stream_speedup": 0.9914701355004611,
+      "overlap_ratio": 0.25583544711142847,
+      "chunk_overhead": 9.654922908289503
+    },
+    {
+      "chunks": 16,
+      "chunked_gemm_ms": 0.46246944427490233,
+      "chunked_serial_ms": 0.6847795104980469,
+      "chunked_multistream_ms": 0.695050277709961,
+      "stream_speedup": 0.9852229866798211,
+      "overlap_ratio": 0.37383200558681695,
+      "chunk_overhead": 22.558955634832717
+    }
+  ],
+  "best_chunk_by_stream_speedup": {
+    "chunks": 4,
+    "chunked_gemm_ms": 0.10024959564208985,
+    "chunked_serial_ms": 0.6771711730957031,
+    "chunked_multistream_ms": 0.6074691009521485,
+    "stream_speedup": 1.1147417572915288,
+    "overlap_ratio": 0.18764336703533524,
+    "chunk_overhead": 4.890109408299679
+  },
+  "finite_outputs": true
+}

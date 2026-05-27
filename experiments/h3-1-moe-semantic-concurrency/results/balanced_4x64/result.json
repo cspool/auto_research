@@ -1,0 +1,47 @@
+{
+  "status": "ok",
+  "token_counts": [
+    64,
+    64,
+    64,
+    64
+  ],
+  "hidden_size": 2048,
+  "ffn_size": 4096,
+  "warmup": 20,
+  "iters": 80,
+  "expert_ms": [
+    {
+      "expert_id": 0,
+      "tokens": 64,
+      "isolated_ms": 0.04382480084896088,
+      "share_of_sum": 0.2505935362682791
+    },
+    {
+      "expert_id": 1,
+      "tokens": 64,
+      "isolated_ms": 0.04469760060310364,
+      "share_of_sum": 0.25558427148230817
+    },
+    {
+      "expert_id": 2,
+      "tokens": 64,
+      "isolated_ms": 0.04318720102310181,
+      "share_of_sum": 0.2469476920889358
+    },
+    {
+      "expert_id": 3,
+      "tokens": 64,
+      "isolated_ms": 0.04317440092563629,
+      "share_of_sum": 0.2468745001604769
+    }
+  ],
+  "sum_expert_ms": 0.17488400340080262,
+  "max_expert_ms": 0.04469760060310364,
+  "serial_ms": 0.20515840053558348,
+  "concurrent_ms": 0.31101720333099364,
+  "stream_speedup": 0.6596368250319835,
+  "overlap_ratio": -0.7784199657083459,
+  "dominance_ratio": 0.25558427148230817,
+  "finite_outputs": true
+}

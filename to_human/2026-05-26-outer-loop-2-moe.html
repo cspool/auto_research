@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Outer Loop 2 MoE Synthesis</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #0969da;
+      background: #f0f6ff;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Outer Loop 2: MoE branch synthesis</h1>
+  <p class="subtitle">H3.1-H3.5 · single request · single RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>综合结论：</strong> 单请求 MoE 的有效并发不是 per-expert streams，
+    而是 semantic routing segment → no-padding tile map → grouped compiler-visible
+    kernel variant。scatter/gather 是真实成本，但 H3.5 说明它还没有吞掉整体收益。
+  </div>
+
+  <h2>证据链</h2>
+  <table>
+    <tr>
+      <th>阶段</th>
+      <th>结果</th>
+      <th>判断</th>
+    </tr>
+    <tr>
+      <td>H3.1 expert streams</td>
+      <td>best 0.6818x</td>
+      <td>stream API 不是合适抽象</td>
+    </tr>
+    <tr>
+      <td>H3.2 grouped epilogue</td>
+      <td>14.15x-18.98x</td>
+      <td>grouped micro-op 很强</td>
+    </tr>
+    <tr>
+      <td>H3.3 padded bmm</td>
+      <td>1.08x-1.39x</td>
+      <td>compute grouping 有效，但 skew 被 padding 拖累</td>
+    </tr>
+    <tr>
+      <td>H3.4 no-padding matmul</td>
+      <td>1.28x-1.48x vs loop</td>
+      <td>valid-tile scheduling 是正确 compute unit</td>
+    </tr>
+    <tr>
+      <td>H3.5 routed fragment</td>
+      <td>1.39x-1.64x vs PyTorch routed loop</td>
+      <td>routing movement 有成本，但整体仍成立</td>
+    </tr>
+  </table>
+
+  <h2>下一步</h2>
+  <p>
+    高价值方向是 H4：Video/VLM token selection 和 KV retrieval。实验模板应保持不变：
+    single request、semantic sparse segment、no-padding grouped tile、显式 movement
+    micro-op，以及 full-fragment latency 作为主指标。若继续 MoE，优先做 H3.6：
+    fuse scatter with first expert matmul。
+  </p>
+</main>
+</body>
+</html>

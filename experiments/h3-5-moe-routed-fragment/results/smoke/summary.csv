@@ -1,0 +1,2 @@
+token_counts,total_tokens,row_tiles,torch_routed_loop_ms,triton_scatter_ms,triton_compute_ms,triton_gather_ms,triton_routed_ms,triton_routed_speedup,movement_fraction_of_routed
+"4,3,2,1",10,4,0.30446932713190716,0.04027733455101649,0.09557333588600159,0.04033066580692927,0.11878400047620137,2.5632183283211467,0.6786099140859946

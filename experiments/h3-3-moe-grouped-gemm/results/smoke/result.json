@@ -1,0 +1,24 @@
+{
+  "status": "ok",
+  "token_counts": [
+    4,
+    4,
+    4,
+    4
+  ],
+  "hidden_size": 256,
+  "ffn_size": 512,
+  "max_tokens": 4,
+  "actual_tokens": 16,
+  "padded_tokens": 16,
+  "padding_overhead": 1.0,
+  "warmup": 2,
+  "iters": 3,
+  "expert_loop_ms": 0.19395200411478677,
+  "grouped_bmm_ms": 0.04820266862710317,
+  "grouped_speedup": 4.023677726542558,
+  "validation": {
+    "finite_outputs": true,
+    "max_abs_diff_vs_loop": 0.0
+  }
+}

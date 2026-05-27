@@ -1,0 +1,3 @@
+order_mode,block_m,block_d,block_q,warps,triton_fused_ms,triton_vs_flat_speedup,max_abs_diff_triton_vs_flat,relative_max_abs_diff_triton
+random_segment,8,64,8,4,0.06101333101590475,0.7664335700770605,0.0,0.0
+random_segment,16,64,8,4,0.045738667249679565,1.022388012697089,0.0,0.0

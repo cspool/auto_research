@@ -1,0 +1,8 @@
+{
+  "platform": "Linux-6.8.0-111-generic-x86_64-with-glibc2.35",
+  "python": "3.13.12",
+  "torch": "2.11.0+cu128",
+  "requested_device": "auto",
+  "cuda_available": false,
+  "cuda_device_count": 0
+}

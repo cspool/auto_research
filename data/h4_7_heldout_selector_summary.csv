@@ -1,0 +1,3 @@
+selector,cases,near_best_count,mean_regret_pct,max_regret_pct,fallback_count
+global_mean_latency_h4_6,8,7,9.92120159712145,27.436280720794116,0
+order_aware_rule_table_h4_6,8,7,7.785284924386401,18.721887205773147,0

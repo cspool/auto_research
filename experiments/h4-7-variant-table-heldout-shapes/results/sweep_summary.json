@@ -1,0 +1,146 @@
+[
+  {
+    "query_count": 2,
+    "order_mode": "random_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q2/random_segment",
+    "best_triton_grouped_ms": 0.04425343990325928,
+    "best_triton_vs_flat_speedup": 3.2640499518404966,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 128,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 8,
+      "num_v_blocks": 1,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "query_count": 2,
+    "order_mode": "random_sorted",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q2/random_sorted",
+    "best_triton_grouped_ms": 0.044177279472351075,
+    "best_triton_vs_flat_speedup": 3.3489504780916097,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 128,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 8,
+      "num_v_blocks": 1,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "query_count": 2,
+    "order_mode": "random_shuffled",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q2/random_shuffled",
+    "best_triton_grouped_ms": 0.043171200752258304,
+    "best_triton_vs_flat_speedup": 3.2144688052573667,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 128,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 8,
+      "num_v_blocks": 1,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "query_count": 2,
+    "order_mode": "clustered_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q2/clustered_segment",
+    "best_triton_grouped_ms": 0.04229119777679444,
+    "best_triton_vs_flat_speedup": 2.432445566391295,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 128,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 8,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "query_count": 8,
+    "order_mode": "random_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q8/random_segment",
+    "best_triton_grouped_ms": 0.031498239040374756,
+    "best_triton_vs_flat_speedup": 3.2821846175994995,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 8,
+      "num_v_blocks": 2,
+      "num_q_blocks": 2
+    },
+    "failed_variants": 1
+  },
+  {
+    "query_count": 8,
+    "order_mode": "random_sorted",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q8/random_sorted",
+    "best_triton_grouped_ms": 0.043912320137023925,
+    "best_triton_vs_flat_speedup": 3.138763791957091,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 8,
+      "num_n_blocks": 8,
+      "num_v_blocks": 2,
+      "num_q_blocks": 2
+    },
+    "failed_variants": 1
+  },
+  {
+    "query_count": 8,
+    "order_mode": "random_shuffled",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q8/random_shuffled",
+    "best_triton_grouped_ms": 0.043807358741760255,
+    "best_triton_vs_flat_speedup": 3.46979520889633,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 128,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 8,
+      "num_v_blocks": 1,
+      "num_q_blocks": 2
+    },
+    "failed_variants": 1
+  },
+  {
+    "query_count": 8,
+    "order_mode": "clustered_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-7-variant-table-heldout-shapes/results/q8/clustered_segment",
+    "best_triton_grouped_ms": 0.02732032060623169,
+    "best_triton_vs_flat_speedup": 3.7029608150747895,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 8,
+      "num_n_blocks": 8,
+      "num_v_blocks": 2,
+      "num_q_blocks": 2
+    },
+    "failed_variants": 1
+  }
+]

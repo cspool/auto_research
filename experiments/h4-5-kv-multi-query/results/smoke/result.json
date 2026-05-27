@@ -1,0 +1,78 @@
+{
+  "status": "ok",
+  "order_mode": "random_segment",
+  "segment_counts": [
+    8,
+    8
+  ],
+  "segment_count": 2,
+  "tokens_per_segment": 32,
+  "key_dim": 64,
+  "value_dim": 64,
+  "query_count": 2,
+  "total_cache_tokens": 64,
+  "selected_tokens": 16,
+  "selection_fraction": 0.25,
+  "torch_flat_total_ms": 0.17744000752766928,
+  "torch_gather_k_ms": 0.014677333335081736,
+  "torch_gather_v_ms": 0.01331199953953425,
+  "torch_score_softmax_ms": 0.07850666840871175,
+  "torch_value_ms": 0.04201599955558777,
+  "torch_component_sum_ms": 0.1485120008389155,
+  "best_triton_grouped_ms": 0.08191999793052673,
+  "best_triton_grouped_per_query_ms": 0.04095999896526337,
+  "best_triton_vs_flat_speedup": 2.166015771608655,
+  "best_oneq_repeated_ms": 0.10103467106819153,
+  "best_grouped_vs_best_oneq_repeated_speedup": 1.2333334182195077,
+  "best_variant": {
+    "block_n": 16,
+    "block_d": 32,
+    "block_v": 32,
+    "block_q": 2,
+    "warps": 4,
+    "num_n_blocks": 1,
+    "num_v_blocks": 2,
+    "num_q_blocks": 1
+  },
+  "best_oneq_variant": {
+    "block_n": 16,
+    "block_d": 32,
+    "block_v": 32,
+    "warps": 4,
+    "num_n_blocks": 1,
+    "num_v_blocks": 2
+  },
+  "order_stats": {
+    "order_span_mean": 9.666666984558105,
+    "order_span_p95": 17.299999237060547,
+    "monotonic_fraction": 0.6000000238418579
+  },
+  "variant_results": [
+    {
+      "block_n": 16,
+      "block_d": 32,
+      "block_v": 32,
+      "block_q": 2,
+      "warps": 4,
+      "num_n_blocks": 1,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1,
+      "triton_grouped_ms": 0.08191999793052673,
+      "triton_oneq_repeated_ms": 0.10103467106819153,
+      "triton_grouped_per_query_ms": 0.04095999896526337,
+      "grouped_vs_flat_speedup": 2.166015771608655,
+      "oneq_repeated_vs_flat_speedup": 1.7562288831317059,
+      "grouped_vs_oneq_repeated_speedup": 1.2333334182195077,
+      "validation": {
+        "finite_outputs": true,
+        "max_abs_diff_grouped_vs_flat": 0.00023102760314941406,
+        "mean_abs_diff_grouped_vs_flat": 6.995711009949446e-05,
+        "relative_max_abs_diff_grouped": 0.00014096702506332604,
+        "max_abs_diff_oneq_vs_flat": 5.960464477539062e-07,
+        "mean_abs_diff_oneq_vs_flat": 1.1504289432195947e-07,
+        "relative_max_abs_diff_oneq": 3.636920151272602e-07,
+        "max_ref_abs": 1.6388769149780273
+      }
+    }
+  ]
+}

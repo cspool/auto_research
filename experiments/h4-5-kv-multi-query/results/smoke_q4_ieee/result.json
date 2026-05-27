@@ -1,0 +1,80 @@
+{
+  "status": "ok",
+  "order_mode": "random_segment",
+  "segment_counts": [
+    32,
+    32,
+    32,
+    32
+  ],
+  "segment_count": 4,
+  "tokens_per_segment": 64,
+  "key_dim": 128,
+  "value_dim": 128,
+  "query_count": 4,
+  "total_cache_tokens": 256,
+  "selected_tokens": 128,
+  "selection_fraction": 0.5,
+  "torch_flat_total_ms": 0.14688639640808104,
+  "torch_gather_k_ms": 0.014975999295711518,
+  "torch_gather_v_ms": 0.014585599303245544,
+  "torch_score_softmax_ms": 0.07456640005111695,
+  "torch_value_ms": 0.03563520014286041,
+  "torch_component_sum_ms": 0.13976319879293442,
+  "best_triton_grouped_ms": 0.05017600059509277,
+  "best_triton_grouped_per_query_ms": 0.012544000148773193,
+  "best_triton_vs_flat_speedup": 2.9274233630818034,
+  "best_oneq_repeated_ms": 0.14561280012130737,
+  "best_grouped_vs_best_oneq_repeated_speedup": 2.902040784325651,
+  "best_variant": {
+    "block_n": 128,
+    "block_d": 64,
+    "block_v": 64,
+    "block_q": 4,
+    "warps": 4,
+    "num_n_blocks": 1,
+    "num_v_blocks": 2,
+    "num_q_blocks": 1
+  },
+  "best_oneq_variant": {
+    "block_n": 128,
+    "block_d": 64,
+    "block_v": 64,
+    "warps": 4,
+    "num_n_blocks": 1,
+    "num_v_blocks": 2
+  },
+  "order_stats": {
+    "order_span_mean": 21.755905151367188,
+    "order_span_p95": 52.0,
+    "monotonic_fraction": 0.5039370059967041
+  },
+  "variant_results": [
+    {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 1,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1,
+      "triton_grouped_ms": 0.05017600059509277,
+      "triton_oneq_repeated_ms": 0.14561280012130737,
+      "triton_grouped_per_query_ms": 0.012544000148773193,
+      "grouped_vs_flat_speedup": 2.9274233630818034,
+      "oneq_repeated_vs_flat_speedup": 1.008746458317625,
+      "grouped_vs_oneq_repeated_speedup": 2.902040784325651,
+      "validation": {
+        "finite_outputs": true,
+        "max_abs_diff_grouped_vs_flat": 2.682209014892578e-07,
+        "mean_abs_diff_grouped_vs_flat": 5.015090209781192e-08,
+        "relative_max_abs_diff_grouped": 5.413679719008368e-07,
+        "max_abs_diff_oneq_vs_flat": 1.4901161193847656e-07,
+        "mean_abs_diff_oneq_vs_flat": 3.1140530154516455e-08,
+        "relative_max_abs_diff_oneq": 3.007599843893538e-07,
+        "max_ref_abs": 0.4954502582550049
+      }
+    }
+  ]
+}

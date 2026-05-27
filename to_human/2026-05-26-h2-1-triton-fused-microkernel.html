@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H2.1 Triton Fused Micro-Kernel</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    code {
+      background: #eef1f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    .note {
+      color: #59636e;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H2.1: 融合微算子的并发 variant 选择</h1>
+  <p class="subtitle">Triton fused epilogue · RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> H2 得到加强。把 vector add 换成
+    <code>GELU(X * scale + Bias) + Residual</code> 后，Triton fusion 明显快于
+    PyTorch eager unfused chain；同时，最佳 standalone variant、最佳 concurrent
+    latency variant、最大 stream speedup variant 仍会分离。
+  </div>
+
+  <h2>关键结果</h2>
+  <table>
+    <tr>
+      <th>Shape</th>
+      <th>PyTorch unfused</th>
+      <th>Best fused</th>
+      <th>Best isolated</th>
+      <th>Best concurrent</th>
+      <th>Best speedup</th>
+    </tr>
+    <tr>
+      <td>balanced 2048</td>
+      <td>0.2721 ms</td>
+      <td>0.1422 ms</td>
+      <td>2048 / 8</td>
+      <td>2048 / 4, 0.2271 ms</td>
+      <td>4096 / 4, 1.2000x</td>
+    </tr>
+    <tr>
+      <td>memory-heavy 1024</td>
+      <td>1.4640 ms</td>
+      <td>0.5614 ms</td>
+      <td>256 / 8</td>
+      <td>512 / 4, 0.5726 ms</td>
+      <td>2048 / 4, 1.1427x</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    Fusion 解决的是 launch 和 global-memory 往返；concurrent scheduling 解决的是
+    在同一张卡上如何把不同资源压力的微算子放在一起。这两个问题相互补充。
+    balanced shape 中，如果只按 standalone fused latency 选 <code>2048/8</code>，
+    并发延迟是 0.2766 ms；按 concurrent latency 选 <code>2048/4</code>，
+    延迟降到 0.2271 ms。
+  </p>
+
+  <p>
+    memory-heavy shape 给了另一个提醒：最大 stream speedup 不等于最低绝对延迟。
+    <code>2048/4</code> 的 speedup 最高，但 concurrent latency 为 0.5920 ms，
+    比最佳 concurrent variant 的 0.5726 ms 更慢。
+  </p>
+
+  <h2>下一步</h2>
+  <p>
+    建议 H2.2 对 balanced 的三个代表 variant 采集 Nsight Compute counters，
+    或者把同一套指标迁移到 tiny MoE expert epilogue / DiT patch MLP fragment。
+  </p>
+
+  <p class="note">
+    原始结果保存在
+    <code>experiments/h2-1-triton-fused-microkernel/results/</code>；
+    汇总 CSV 为 <code>data/h2_1_triton_fused_microkernel_summary.csv</code>。
+  </p>
+</main>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "status": "ok",
+  "segment_counts": [
+    4,
+    3,
+    2,
+    1
+  ],
+  "segment_count": 4,
+  "tokens_per_segment": 16,
+  "index_mode": "random",
+  "dim": 64,
+  "query_count": 8,
+  "total_cache_tokens": 64,
+  "selected_tokens": 10,
+  "selection_fraction": 0.15625,
+  "block_m": 16,
+  "block_d": 64,
+  "block_q": 8,
+  "warps": 4,
+  "torch_segment_loop_ms": 0.2648640076319377,
+  "torch_flat_total_ms": 0.050517335534095764,
+  "torch_gather_ms": 0.0266239990790685,
+  "torch_score_ms": 0.01877333347996076,
+  "triton_fused_ms": 0.04576000074545542,
+  "triton_vs_segment_speedup": 5.788111960602234,
+  "triton_vs_flat_speedup": 1.1039627340721319,
+  "flat_vs_segment_speedup": 5.243032017260144,
+  "gather_fraction_of_flat": 0.5270269858373491,
+  "score_fraction_of_flat": 0.3716216083346287,
+  "approx_segment_loop_launches": 12,
+  "approx_flat_launches": 2,
+  "approx_triton_launches": 1,
+  "validation": {
+    "finite_outputs": true,
+    "max_abs_diff_loop_vs_flat": 0.0,
+    "max_abs_diff_triton_vs_flat": 0.0,
+    "max_ref_abs": 26.328125,
+    "relative_max_abs_diff_triton": 0.0
+  }
+}

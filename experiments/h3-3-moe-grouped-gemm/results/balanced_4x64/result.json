@@ -1,0 +1,26 @@
+{
+  "status": "ok",
+  "token_counts": [
+    64,
+    64,
+    64,
+    64
+  ],
+  "hidden_size": 2048,
+  "ffn_size": 4096,
+  "max_tokens": 64,
+  "actual_tokens": 256,
+  "padded_tokens": 256,
+  "padding_overhead": 1.0,
+  "warmup": 20,
+  "iters": 80,
+  "expert_loop_ms": 0.22648320198059083,
+  "grouped_bmm_ms": 0.18416639566421508,
+  "grouped_speedup": 1.2297748520502658,
+  "validation": {
+    "finite_outputs": true,
+    "max_abs_diff_vs_loop": 8.0,
+    "max_ref_abs": 9264.0,
+    "relative_max_abs_diff": 0.0008635578583765112
+  }
+}

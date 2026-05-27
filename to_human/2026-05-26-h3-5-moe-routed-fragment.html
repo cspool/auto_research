@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H3.5 Routed No-Padding MoE Fragment</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    code {
+      background: #eef1f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H3.5: routed no-padding MoE fragment</h1>
+  <p class="subtitle">Scatter + no-padding grouped FFN + gather · RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> H3.4 的 no-padding grouped expert tile
+    在加入 scatter/gather 后仍然成立。完整 routed Triton fragment 比 PyTorch
+    routed expert loop 快 1.39x 到 1.64x；routing movement 约占 21% 到 23%。
+  </div>
+
+  <h2>结果</h2>
+  <table>
+    <tr>
+      <th>分布</th>
+      <th>PyTorch loop</th>
+      <th>Scatter</th>
+      <th>Compute</th>
+      <th>Gather</th>
+      <th>Triton full</th>
+      <th>Speedup</th>
+      <th>Movement</th>
+    </tr>
+    <tr>
+      <td>64,64,64,64</td>
+      <td>0.2718 ms</td>
+      <td>0.0183 ms</td>
+      <td>0.1579 ms</td>
+      <td>0.0185 ms</td>
+      <td>0.1753 ms</td>
+      <td>1.55x</td>
+      <td>21.0%</td>
+    </tr>
+    <tr>
+      <td>160,64,24,8</td>
+      <td>0.2728 ms</td>
+      <td>0.0223 ms</td>
+      <td>0.2024 ms</td>
+      <td>0.0198 ms</td>
+      <td>0.1959 ms</td>
+      <td>1.39x</td>
+      <td>21.5%</td>
+    </tr>
+    <tr>
+      <td>16,16,16,16</td>
+      <td>0.2744 ms</td>
+      <td>0.0183 ms</td>
+      <td>0.1561 ms</td>
+      <td>0.0196 ms</td>
+      <td>0.1671 ms</td>
+      <td>1.64x</td>
+      <td>22.6%</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    这个实验把 MoE 分支从“已 pack 的 expert buffer”推进到了更完整的单请求 routed
+    fragment。scatter/gather 不是免费项，大约消耗五分之一的 full fragment latency；
+    但它没有吞掉 no-padding tile 的收益。下一步如果继续 MoE，应把 routing movement
+    和第一/第二个 expert matmul 融合；如果转向 Video/VLM，则用同样方法处理 token
+    selection 和 KV retrieval。
+  </p>
+</main>
+</body>
+</html>

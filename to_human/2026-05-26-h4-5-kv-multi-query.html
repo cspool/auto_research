@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H4.5 Multi-Query Sparse Attention</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    code {
+      background: #f6f8fa;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H4.5: multi-query sparse attention</h1>
+  <p class="subtitle">1024 selected tokens · Q=4 shared K/V · RTX 4090 · 2026-05-26</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> grouped-query Triton 支持 H4。把 4 个 query
+    放进同一对 online-softmax kernels 后，比 flat PyTorch 快 2.86x 到 3.64x，
+    比逐 query 重复执行 H4.4 式 kernel 快 3.41x 到 3.66x。
+  </div>
+
+  <h2>结果</h2>
+  <table>
+    <tr>
+      <th>Order</th>
+      <th>Flat PyTorch</th>
+      <th>Best grouped Triton</th>
+      <th>Speedup</th>
+      <th>Repeated one-query</th>
+      <th>Grouped / repeated</th>
+      <th>Best grouped variant</th>
+    </tr>
+    <tr>
+      <td>random segment</td>
+      <td>0.1231 ms</td>
+      <td>0.0338 ms</td>
+      <td>3.64x</td>
+      <td>0.1238 ms</td>
+      <td>3.66x</td>
+      <td>N64 D64 V64 Q4 W4</td>
+    </tr>
+    <tr>
+      <td>random sorted</td>
+      <td>0.1228 ms</td>
+      <td>0.0429 ms</td>
+      <td>2.86x</td>
+      <td>0.1470 ms</td>
+      <td>3.42x</td>
+      <td>N128 D128 V64 Q4 W4</td>
+    </tr>
+    <tr>
+      <td>random shuffled</td>
+      <td>0.1306 ms</td>
+      <td>0.0433 ms</td>
+      <td>3.02x</td>
+      <td>0.1475 ms</td>
+      <td>3.41x</td>
+      <td>N128 D64 V64 Q4 W8</td>
+    </tr>
+    <tr>
+      <td>clustered segment</td>
+      <td>0.1280 ms</td>
+      <td>0.0425 ms</td>
+      <td>3.01x</td>
+      <td>0.1473 ms</td>
+      <td>3.46x</td>
+      <td>N128 D64 V128 Q4 W4</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    H4.5 的关键不是“又写了一个更快的 kernel”，而是把 query/head 复用变成
+    compiler-visible 的调度单位。逐 query 重复执行会重新付 launch、K/V 读、
+    score 和 partial reduction 成本，最后大致退回 flat PyTorch 的延迟区间；
+    grouped-query kernel 则把这些工作摊到 4 个 query 上。
+  </p>
+  <p>
+    结果还给了一个清晰的资源边界：<code>N256 D64 V64 Q4 W4</code> 在所有 full
+    runs 中 shared memory 超限，要求 133120 bytes，而硬件上限是 101376 bytes。
+    这说明 H4 的 runtime table 必须同时包含 measured latency 和 static resource
+    feasibility。
+  </p>
+</main>
+</body>
+</html>
+

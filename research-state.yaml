@@ -1,0 +1,452 @@
+# AutoResearch State — Multi-Operator Concurrency for Single-Accelerator Inference
+# Created: 2026-05-25
+
+meta:
+  question: >
+    How to achieve multi-operator / micro-operator concurrency for single-request
+    model inference (MoE, wavelet-Diffusion, DiT, multimodal, Video) on a single
+    GPU/NPU/accelerator backend? Focus on hardware architecture and compilation
+    framework methods/implementations.
+  status: h4-8-query-aware-selector-supported
+  started: 2026-05-25
+  last_updated: 2026-05-27
+  continuity:
+    requested: autoresearch loop
+    status: fallback-recorded
+    note: >
+      This session did not expose /loop or cron.add, so agent continuity could
+      not be installed. Continue by reading research-state.yaml and findings.md.
+  literature_source_policy: local-notes-only for bootstrap
+
+phase: h4_selected_token_shape_next
+
+hypotheses:
+  - id: H1
+    title: Stream concurrency alone is insufficient for single-request inference
+    prediction: >
+      Multi-stream execution will show limited overlap unless kernels are
+      resource-complementary or spatially constrained.
+    status: preliminary_supported
+    evidence: >
+      RTX 4090 microbenchmark showed multi-stream speedup from 0.997x to 1.043x
+      and overlap ratio from -0.1% to 6.0% across three shapes.
+  - id: H2
+    title: Micro-operator tiling plus multi-version kernels improves scheduling
+    prediction: >
+      Runtime selection among resource-diverse micro-kernels will outperform
+      generic operator fusion on heterogeneous operator chains.
+    status: strengthened
+    evidence: >
+      Triton vector-add variants showed that the fastest isolated micro-kernel
+      was not the lowest-latency concurrent variant on both balanced and
+      memory-heavy RTX 4090 shapes. A fused GELU/residual micro-kernel then
+      showed the same objective separation on a more model-shaped operator
+      fragment, while also exposing that stream_speedup can be inflated by a
+      slower serial baseline. Triton cache artifact analysis recovered tile
+      size, warps, thread count, shared memory, PTX register declarations, and
+      code-size metadata for all fused variants, giving an implementation path
+      for runtime variant tables.
+  - id: H3
+    title: Model-semantic decomposition exposes stronger concurrency
+    prediction: >
+      MoE experts, diffusion patches/dGraphs, multimodal modules, and video KV
+      retrieval expose concurrency not visible to a generic tensor graph.
+    status: strongly_supported_moe_branch
+    evidence: >
+      A tiny single-request MoE FFN fragment showed that expert branches are
+      semantic units, but naive PyTorch one-stream-per-expert execution was
+      slower than serial execution across balanced, skewed, and tiny token
+      distributions. A Triton grouped expert epilogue micro-operator then beat
+      PyTorch expert epilogue loops by 14.15x to 18.98x and per-expert Triton
+      streams by 16.37x to 17.72x, supporting the refined claim that MoE
+      semantics become useful when lowered into grouped compiler-visible units.
+      Padded grouped expert GEMM was also positive but modest, with 1.08x to
+      1.39x speedup; skewed routing reduced the benefit due to padding overhead.
+      A no-padding Triton expert-tiled matmul recovered this boundary, beating
+      padded bmm by 1.12x to 1.31x and expert loops by 1.28x to 1.48x across
+      balanced, skewed, and tiny distributions. Adding explicit scatter/gather
+      around the no-padding grouped FFN still beat the PyTorch routed expert
+      loop by 1.39x to 1.64x; routing movement consumed about 21% to 23% of
+      full routed latency.
+  - id: H4
+    title: Irregular video/VLM workloads need hardware-aware or hardware-assisted scheduling
+    prediction: >
+      Branch-heavy token selection and KV retrieval will bottleneck GPU-only
+      execution unless restructured into tile-local or accelerator-native units.
+    status: strongly_supported_sparse_attention_branch
+    evidence: >
+      A sparse video/VLM KV retrieval score fragment showed that per-segment
+      PyTorch execution is launch-bound: a 32-segment loop was 52x to 64x
+      slower than a fused Triton gather-score kernel. Flattening selected
+      indices into PyTorch gather+GEMM helped greatly, but selected-K gather
+      still accounted for 43% to 46% of flat latency. Fused Triton avoided the
+      materialized gathered-K buffer and beat flat PyTorch by 1.15x to 1.35x.
+      A locality/order sweep then showed fused Triton remained 1.37x to 1.42x
+      faster than flat PyTorch across random, sorted, shuffled, and clustered
+      selected-token orders, while the best tile variant changed with order.
+      Extending the proxy to score-softmax-value made the fusion benefit much
+      stronger: a single-tile Triton sparse attention fragment beat flat PyTorch
+      eager by 5.78x to 6.79x across the same order modes. A two-stage
+      multi-block online-softmax Triton prototype then scaled the sparse
+      attention fragment to 1024 selected tokens and still beat flat PyTorch by
+      2.99x to 4.76x. A grouped-query extension with Q=4 then beat flat PyTorch
+      by 2.86x to 3.64x and measured per-query repeated online-softmax kernels
+      by 3.41x to 3.66x, while exposing shared-memory feasibility as a runtime
+      table constraint. A runtime-table prototype then rejected all observed
+      shared-memory OOR variants and selected near-best valid variants in 3/4
+      order modes with a global latency table, or 4/4 with an order-aware table.
+      On held-out query counts Q=2 and Q=8, the same static filter rejected all
+      observed OOR variants and the order-aware table stayed within 15% of
+      measured best in 7/8 cases, exposing query-count pressure as the next
+      selector feature. Adding query-count, num_q_blocks, and query-pressure
+      features then fixed that miss and selected measured-best valid variants in
+      all 8/8 held-out query-count cases.
+
+experiments_completed: 18
+inner_loop_iterations: 18
+outer_loop_iterations: 4
+
+current_direction: >
+  Deepen H4 with H4.9: test selected-token-count held-out shapes, such as 512
+  and 2048 selected tokens at Q=4. Evaluate whether the H4.8 runtime table still
+  chooses near-best valid variants; if it misses, add num_n_blocks and selected
+  token/blocking pressure as selector features.
+
+# Trajectory tracking
+trajectory:
+  - experiment_id: h1_stream_concurrency_rtx4090
+    hypothesis: H1
+    metric_name: multistream_speedup
+    metric_value: 1.0433
+    baseline: 1.0
+    delta: "+4.33% best-case; neutral/slower on other shapes"
+    wall_time_min: 5
+    change_summary: >
+      Ran serial, multistream, and CUDA Graph baselines for independent
+      model-shaped operators on RTX 4090.
+  - experiment_id: h1_1_resource_shaped_streams_rtx4090
+    hypothesis: H1
+    metric_name: chunked_stream_speedup
+    metric_value: 1.1147
+    baseline: 1.0
+    delta: >
+      Best relative chunked stream speedup was +11.47%, but absolute latency did
+      not reliably beat full-kernel multi-stream and chunk overhead was high.
+    wall_time_min: 8
+    change_summary: >
+      Split GEMM into row chunks and compared chunked serial versus chunked
+      multi-stream on three RTX 4090 shapes.
+  - experiment_id: h2_triton_variant_scheduling_rtx4090
+    hypothesis: H2
+    metric_name: best_concurrent_differs_from_best_isolated
+    metric_value: 1.0
+    baseline: 0.0
+    delta: >
+      In two tested shapes, the fastest isolated Triton add variant differed
+      from the lowest-latency concurrent variant.
+    wall_time_min: 10
+    change_summary: >
+      Swept Triton vector-add BLOCK_SIZE and num_warps variants while running
+      concurrently with GEMM on RTX 4090.
+  - experiment_id: h2_1_triton_fused_microkernel_rtx4090
+    hypothesis: H2
+    metric_name: best_concurrent_differs_from_best_isolated
+    metric_value: 1.0
+    baseline: 0.0
+    delta: >
+      Fused GELU/residual Triton micro-kernel beat PyTorch eager unfused by
+      1.91x to 2.61x. Balanced shape showed a meaningful best-isolated versus
+      best-concurrent split; memory-heavy shape showed that best stream speedup
+      can select a worse absolute latency.
+    wall_time_min: 10
+    change_summary: >
+      Swept Triton fused epilogue variants under GEMM co-scheduling and compared
+      isolated latency, concurrent latency, and stream-speedup objectives.
+  - experiment_id: h2_2_triton_compiler_metadata
+    hypothesis: H2
+    metric_name: recovered_compiler_metadata_variants
+    metric_value: 29
+    baseline: 0
+    delta: >
+      Recovered all 29 H2.1 Triton fused micro-kernel cache entries, including
+      14 balanced and 14 memory-heavy measured variants plus one smoke test.
+    wall_time_min: 5
+    change_summary: >
+      Parsed Triton JSON, TTGIR, and PTX cache artifacts and joined static
+      compiler metadata with H2.1 latency measurements.
+  - experiment_id: h3_1_moe_semantic_concurrency_rtx4090
+    hypothesis: H3
+    metric_name: naive_expert_stream_speedup
+    metric_value: 0.6818
+    baseline: 1.0
+    delta: >
+      Naive one-stream-per-expert MoE execution was slower than serial execution
+      on all tested token distributions; best observed speedup was 0.6818x.
+    wall_time_min: 8
+    change_summary: >
+      Tested balanced, skewed, and tiny four-expert single-request MoE FFN
+      fragments using PyTorch expert loops and per-expert CUDA streams.
+  - experiment_id: h3_2_moe_triton_epilogue_rtx4090
+    hypothesis: H3
+    metric_name: grouped_vs_torch_speedup
+    metric_value: 18.9756
+    baseline: 1.0
+    delta: >
+      Grouped Triton expert epilogue was 14.15x to 18.98x faster than PyTorch
+      expert epilogue loops and 16.37x to 17.72x faster than per-expert Triton
+      stream launches.
+    wall_time_min: 10
+    change_summary: >
+      Compared PyTorch expert epilogue loop, per-expert Triton serial,
+      per-expert Triton streams, and grouped single Triton kernel across three
+      single-request MoE token distributions.
+  - experiment_id: h3_3_moe_grouped_gemm_rtx4090
+    hypothesis: H3
+    metric_name: grouped_bmm_speedup
+    metric_value: 1.3860
+    baseline: 1.0
+    delta: >
+      Padded grouped bmm was faster than expert loop across three distributions,
+      with speedup from 1.08x to 1.39x. Skewed routing had 2.5x padding overhead
+      and only 1.08x speedup.
+    wall_time_min: 8
+    change_summary: >
+      Compared serial PyTorch expert FFN loop with padded strided batched GEMM
+      grouped expert compute.
+  - experiment_id: h3_4_moe_triton_irregular_gemm_rtx4090
+    hypothesis: H3
+    metric_name: triton_vs_padded_bmm_speedup
+    metric_value: 1.3066
+    baseline: 1.0
+    delta: >
+      No-padding Triton expert matmul beat padded grouped bmm by 1.12x to 1.31x
+      and expert loop by 1.28x to 1.48x. The skewed distribution benefited most.
+    wall_time_min: 12
+    change_summary: >
+      Implemented a row-tile map for valid expert token segments and ran two
+      custom Triton grouped matmul kernels plus ReLU for a single-request MoE
+      FFN fragment.
+  - experiment_id: h3_5_moe_routed_fragment_rtx4090
+    hypothesis: H3
+    metric_name: triton_routed_speedup
+    metric_value: 1.6419
+    baseline: 1.0
+    delta: >
+      Routed no-padding Triton fragment beat the PyTorch routed expert loop by
+      1.39x to 1.64x across balanced, skewed, and tiny distributions. Explicit
+      scatter/gather accounted for about 21% to 23% of full routed latency.
+    wall_time_min: 10
+    change_summary: >
+      Added top-1 routing movement around the H3.4 no-padding grouped FFN:
+      scatter original token order to expert-contiguous layout, run grouped
+      Triton FFN, then gather back to original token order.
+  - experiment_id: h4_1_video_kv_retrieval_rtx4090
+    hypothesis: H4
+    metric_name: triton_vs_flat_speedup
+    metric_value: 1.3519
+    baseline: 1.0
+    delta: >
+      Fused Triton gather-score beat flat PyTorch gather+GEMM by 1.15x to 1.35x
+      and beat per-segment PyTorch loops by 52x to 64x across balanced, skewed,
+      and tiny sparse retrieval distributions.
+    wall_time_min: 10
+    change_summary: >
+      Implemented a sparse video/VLM KV retrieval score proxy with semantic
+      frame/segment selections, comparing per-segment PyTorch loops, flat
+      PyTorch gather+GEMM, and one fused Triton gather-score kernel.
+  - experiment_id: h4_2_kv_locality_order_rtx4090
+    hypothesis: H4
+    metric_name: best_triton_vs_flat_speedup
+    metric_value: 1.4182
+    baseline: 1.0
+    delta: >
+      Best fused Triton gather-score beat flat PyTorch by 1.37x to 1.42x across
+      random segment, globally sorted, globally shuffled, and clustered segment
+      orders. Index locality changed order-span statistics dramatically, but
+      best latency varied only about 2.1%; best tile variants differed by order.
+    wall_time_min: 10
+    change_summary: >
+      Swept selected-token order and six Triton tile variants for the sparse
+      video/VLM KV retrieval score proxy.
+  - experiment_id: h4_3_kv_score_softmax_value_rtx4090
+    hypothesis: H4
+    metric_name: best_triton_vs_flat_speedup
+    metric_value: 6.7859
+    baseline: 1.0
+    delta: >
+      Single-tile fused Triton score-softmax-value sparse attention beat flat
+      PyTorch eager by 5.78x to 6.79x across random segment, globally sorted,
+      globally shuffled, and clustered segment orders.
+    wall_time_min: 12
+    change_summary: >
+      Extended sparse KV retrieval from score-only to a single-query attention
+      fragment with K/V gather, score, softmax, and value aggregation.
+  - experiment_id: h4_4_kv_online_softmax_rtx4090
+    hypothesis: H4
+    metric_name: best_triton_vs_flat_speedup
+    metric_value: 4.7598
+    baseline: 1.0
+    delta: >
+      Two-stage multi-block online-softmax Triton sparse attention beat flat
+      PyTorch eager by 2.99x to 4.76x on a 1024-selected-token single-query
+      fragment across random segment, sorted, shuffled, and clustered orders.
+    wall_time_min: 12
+    change_summary: >
+      Implemented partial max/denominator/value kernels plus an online-softmax
+      reduce kernel to scale sparse score-softmax-value beyond the H4.3
+      single-tile limit.
+  - experiment_id: h4_5_kv_multi_query_rtx4090
+    hypothesis: H4
+    metric_name: best_triton_vs_flat_speedup
+    metric_value: 3.6396
+    baseline: 1.0
+    delta: >
+      Grouped-query two-stage Triton sparse attention beat flat PyTorch eager by
+      2.86x to 3.64x and beat measured per-query repeated online-softmax kernels
+      by 3.41x to 3.66x across four selected-token orders.
+    wall_time_min: 12
+    change_summary: >
+      Extended the H4.4 online-softmax sparse attention prototype to Q=4 shared
+      selected K/V queries, measured repeated single-query launches, and
+      recorded shared-memory infeasible variants.
+  - experiment_id: h4_6_runtime_variant_table
+    hypothesis: H4
+    metric_name: near_best_order_count
+    metric_value: 4
+    baseline: 3
+    delta: >
+      Static feasibility rejected 4/4 observed shared-memory OOR rows. A global
+      mean latency table selected within 10% of measured best in 3/4 order
+      modes, while an order-aware rule table selected within 10% in 4/4 modes.
+    wall_time_min: 5
+    change_summary: >
+      Built a compiler/runtime variant-table prototype from H4.5 CSV artifacts,
+      joining tile metadata, shared-memory proxy, order statistics, and measured
+      grouped sparse-attention latency.
+  - experiment_id: h4_7_variant_table_heldout_query_counts
+    hypothesis: H4
+    metric_name: heldout_near_best_count
+    metric_value: 7
+    baseline: 8
+    delta: >
+      On held-out Q=2 and Q=8 grouped sparse-attention sweeps, static filtering
+      rejected 8/8 observed OOR rows. The H4.6 order-aware selector was within
+      15% of measured best in 7/8 cases and improved mean regret over the global
+      mean selector.
+    wall_time_min: 10
+    change_summary: >
+      Ran eight held-out query-count GPU sweeps and evaluated the H4.6 runtime
+      variant table without retuning, revealing that Q=8 clustered_segment needs
+      query-count-aware value-blocking/warps selection.
+  - experiment_id: h4_8_query_aware_selector
+    hypothesis: H4
+    metric_name: heldout_near_best_count
+    metric_value: 8
+    baseline: 7
+    delta: >
+      Adding query_count, num_q_blocks, and query_count / BLOCK_Q fixed the Q=8
+      clustered_segment miss and selected measured-best valid variants in 8/8
+      H4.7 held-out query-count cases.
+    wall_time_min: 5
+    change_summary: >
+      Built a query-count-aware runtime rule table over H4.7 measurements while
+      preserving static feasibility filtering and order-statistics classes.
+
+# Key decisions log
+decisions: []
+artifacts:
+  literature:
+    - literature/local_notes_search.md
+    - literature/survey.md
+    - literature/experiment_framework.md
+  reports:
+    - to_human/2026-05-25-local-notes-bootstrap.html
+    - to_human/2026-05-26-h1-stream-concurrency.html
+    - to_human/2026-05-26-h1-1-resource-shaped-streams.html
+    - to_human/2026-05-26-h2-triton-variant-scheduling.html
+    - to_human/2026-05-26-h2-1-triton-fused-microkernel.html
+    - to_human/2026-05-26-h2-2-triton-compiler-metadata.html
+    - to_human/2026-05-26-outer-loop-1.html
+    - to_human/2026-05-26-h3-1-moe-semantic-concurrency.html
+    - to_human/2026-05-26-h3-2-moe-triton-epilogue.html
+    - to_human/2026-05-26-h3-3-moe-grouped-gemm.html
+    - to_human/2026-05-26-h3-4-moe-triton-irregular-gemm.html
+    - to_human/2026-05-26-h3-5-moe-routed-fragment.html
+    - to_human/2026-05-26-outer-loop-2-moe.html
+    - to_human/2026-05-26-h4-1-video-kv-retrieval.html
+    - to_human/2026-05-26-h4-2-kv-locality-order.html
+    - to_human/2026-05-26-h4-3-kv-score-softmax-value.html
+    - to_human/2026-05-26-outer-loop-3-h4.html
+    - to_human/2026-05-26-h4-4-kv-online-softmax.html
+    - to_human/2026-05-26-h4-5-kv-multi-query.html
+    - to_human/2026-05-26-outer-loop-4-h4.html
+    - to_human/2026-05-27-h4-6-runtime-variant-table.html
+    - to_human/2026-05-27-h4-7-heldout-query-counts.html
+    - to_human/2026-05-27-h4-8-query-aware-selector.html
+  experiments:
+    - experiments/h1-stream-concurrency/protocol.md
+    - experiments/h1-stream-concurrency/analysis.md
+    - data/h1_stream_concurrency_summary.csv
+    - experiments/h1-1-resource-shaped-streams/protocol.md
+    - experiments/h1-1-resource-shaped-streams/analysis.md
+    - data/h1_1_resource_shaped_summary.csv
+    - experiments/h2-triton-variant-scheduling/protocol.md
+    - experiments/h2-triton-variant-scheduling/analysis.md
+    - data/h2_triton_variant_scheduling_summary.csv
+    - experiments/h2-1-triton-fused-microkernel/protocol.md
+    - experiments/h2-1-triton-fused-microkernel/analysis.md
+    - data/h2_1_triton_fused_microkernel_summary.csv
+    - experiments/h2-2-triton-compiler-metadata/protocol.md
+    - experiments/h2-2-triton-compiler-metadata/analysis.md
+    - data/h2_2_triton_compiler_metadata/unique_variants.csv
+    - data/h2_2_triton_compiler_metadata/joined_latency_metadata.csv
+    - synthesis/outer-loop-1.md
+    - experiments/h3-1-moe-semantic-concurrency/protocol.md
+    - experiments/h3-1-moe-semantic-concurrency/analysis.md
+    - data/h3_1_moe_semantic_concurrency_summary.csv
+    - experiments/h3-2-moe-triton-epilogue/protocol.md
+    - experiments/h3-2-moe-triton-epilogue/analysis.md
+    - data/h3_2_moe_triton_epilogue_summary.csv
+    - experiments/h3-3-moe-grouped-gemm/protocol.md
+    - experiments/h3-3-moe-grouped-gemm/analysis.md
+    - data/h3_3_moe_grouped_gemm_summary.csv
+    - experiments/h3-4-moe-triton-irregular-gemm/protocol.md
+    - experiments/h3-4-moe-triton-irregular-gemm/analysis.md
+    - data/h3_4_moe_triton_irregular_gemm_summary.csv
+    - experiments/h3-5-moe-routed-fragment/protocol.md
+    - experiments/h3-5-moe-routed-fragment/analysis.md
+    - data/h3_5_moe_routed_fragment_summary.csv
+    - synthesis/outer-loop-2-moe.md
+    - experiments/h4-1-video-kv-retrieval/protocol.md
+    - experiments/h4-1-video-kv-retrieval/analysis.md
+    - data/h4_1_video_kv_retrieval_summary.csv
+    - experiments/h4-2-kv-locality-order/protocol.md
+    - experiments/h4-2-kv-locality-order/analysis.md
+    - data/h4_2_kv_locality_order_summary.csv
+    - experiments/h4-3-kv-score-softmax-value/protocol.md
+    - experiments/h4-3-kv-score-softmax-value/analysis.md
+    - data/h4_3_kv_score_softmax_value_summary.csv
+    - synthesis/outer-loop-3-h4.md
+    - experiments/h4-4-kv-online-softmax/protocol.md
+    - experiments/h4-4-kv-online-softmax/analysis.md
+    - data/h4_4_kv_online_softmax_summary.csv
+    - experiments/h4-5-kv-multi-query/protocol.md
+    - experiments/h4-5-kv-multi-query/analysis.md
+    - data/h4_5_kv_multi_query_summary.csv
+    - data/h4_5_kv_multi_query_variants.csv
+    - synthesis/outer-loop-4-h4.md
+    - experiments/h4-6-runtime-variant-table/protocol.md
+    - experiments/h4-6-runtime-variant-table/analysis.md
+    - data/h4_6_runtime_variant_table.csv
+    - data/h4_6_runtime_variant_decisions.csv
+    - data/h4_6_runtime_variant_summary.csv
+    - experiments/h4-7-variant-table-heldout-shapes/protocol.md
+    - experiments/h4-7-variant-table-heldout-shapes/analysis.md
+    - data/h4_7_heldout_variant_rows.csv
+    - data/h4_7_heldout_selector_decisions.csv
+    - data/h4_7_heldout_selector_summary.csv
+    - experiments/h4-8-query-aware-selector/protocol.md
+    - experiments/h4-8-query-aware-selector/analysis.md
+    - data/h4_8_query_aware_decisions.csv
+    - data/h4_8_query_aware_comparison.csv
+    - data/h4_8_query_aware_summary.csv

@@ -1,0 +1,33 @@
+{
+  "status": "ok",
+  "summary_csv": "/data3/auto_research/data/h4_5_kv_multi_query_summary.csv",
+  "variants_csv": "/data3/auto_research/data/h4_5_kv_multi_query_variants.csv",
+  "near_best_threshold": 0.1,
+  "shared_limit": 101376,
+  "required_shared_bytes_by_failed_variant": {
+    "N256 D64 V64 Q4 W4": 133120
+  },
+  "observed_failed_variants": 4,
+  "static_rejected_failed_variants": 4,
+  "static_rejected_failed_fraction": 1.0,
+  "selector_summary": [
+    {
+      "selector": "global_mean_latency",
+      "orders": 4,
+      "near_best_count": 3,
+      "mean_regret_pct": 3.46678340168749,
+      "max_regret_pct": 12.055920216251593,
+      "fallback_count": 0,
+      "invalid_selected_count": 0
+    },
+    {
+      "selector": "order_aware_rule_table",
+      "orders": 4,
+      "near_best_count": 4,
+      "mean_regret_pct": 0.0,
+      "max_regret_pct": 0.0,
+      "fallback_count": 0,
+      "invalid_selected_count": 0
+    }
+  ]
+}

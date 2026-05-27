@@ -1,0 +1,72 @@
+{
+  "status": "ok",
+  "order_mode": "random_segment",
+  "segment_counts": [
+    8,
+    8
+  ],
+  "segment_count": 2,
+  "tokens_per_segment": 32,
+  "key_dim": 64,
+  "value_dim": 64,
+  "total_cache_tokens": 64,
+  "selected_tokens": 16,
+  "selection_fraction": 0.25,
+  "torch_flat_total_ms": 0.19153066476186117,
+  "torch_gather_k_ms": 0.0170666662355264,
+  "torch_gather_v_ms": 0.016042667130629223,
+  "torch_score_softmax_ms": 0.0795413355032603,
+  "torch_value_ms": 0.04165333261092504,
+  "torch_component_sum_ms": 0.15430400148034096,
+  "best_triton_online_ms": 0.06690133114655812,
+  "best_triton_vs_flat_speedup": 2.8628827181671834,
+  "best_variant": {
+    "block_n": 16,
+    "block_d": 64,
+    "block_v": 64,
+    "warps": 4,
+    "num_n_blocks": 1,
+    "num_v_blocks": 1
+  },
+  "order_stats": {
+    "order_span_mean": 13.533333778381348,
+    "order_span_p95": 34.500003814697266,
+    "monotonic_fraction": 0.5333333611488342
+  },
+  "variant_results": [
+    {
+      "block_n": 8,
+      "block_d": 32,
+      "block_v": 32,
+      "warps": 4,
+      "num_n_blocks": 2,
+      "num_v_blocks": 2,
+      "triton_online_ms": 0.07406933108965556,
+      "triton_vs_flat_speedup": 2.5858295456999225,
+      "validation": {
+        "finite_outputs": true,
+        "max_abs_diff_triton_vs_flat": 8.940696716308594e-08,
+        "mean_abs_diff_triton_vs_flat": 2.9551301850005984e-08,
+        "max_ref_abs": 0.674837052822113,
+        "relative_max_abs_diff_triton": 1.3248674889618664e-07
+      }
+    },
+    {
+      "block_n": 16,
+      "block_d": 64,
+      "block_v": 64,
+      "warps": 4,
+      "num_n_blocks": 1,
+      "num_v_blocks": 1,
+      "triton_online_ms": 0.06690133114655812,
+      "triton_vs_flat_speedup": 2.8628827181671834,
+      "validation": {
+        "finite_outputs": true,
+        "max_abs_diff_triton_vs_flat": 1.1920928955078125e-07,
+        "mean_abs_diff_triton_vs_flat": 2.4923792807385325e-08,
+        "max_ref_abs": 0.674837052822113,
+        "relative_max_abs_diff_triton": 1.7664899852824887e-07
+      }
+    }
+  ]
+}

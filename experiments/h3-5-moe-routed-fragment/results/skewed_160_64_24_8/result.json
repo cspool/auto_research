@@ -1,0 +1,33 @@
+{
+  "status": "ok",
+  "token_counts": [
+    160,
+    64,
+    24,
+    8
+  ],
+  "hidden_size": 2048,
+  "ffn_size": 4096,
+  "total_tokens": 256,
+  "block_m": 32,
+  "block_n": 32,
+  "block_k": 64,
+  "warps": 4,
+  "move_block_size": 256,
+  "row_tiles": 9,
+  "torch_routed_loop_ms": 0.2727679967880249,
+  "triton_scatter_ms": 0.02229759991168976,
+  "triton_compute_ms": 0.20236799716949463,
+  "triton_gather_ms": 0.019788800179958342,
+  "triton_movement_ms": 0.0420864000916481,
+  "triton_routed_ms": 0.19586960077285767,
+  "triton_routed_speedup": 1.3925999527836035,
+  "movement_fraction_of_routed": 0.21486948421595067,
+  "compute_fraction_of_routed": 1.0331771564908272,
+  "validation": {
+    "finite_outputs": true,
+    "max_abs_diff_vs_torch": 8.0,
+    "max_ref_abs": 9776.0,
+    "relative_max_abs_diff": 0.0008183306055646482
+  }
+}

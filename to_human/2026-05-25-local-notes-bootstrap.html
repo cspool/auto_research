@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local Notes Bootstrap Report</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1b1f24;
+      background: #f6f7f9;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 24px 56px;
+      background: #fff;
+      min-height: 100vh;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 32px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 28px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0 24px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      background: #f1f4f8;
+      text-align: left;
+    }
+    code {
+      background: #eef1f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    .callout {
+      border-left: 4px solid #0969da;
+      background: #f1f7ff;
+      padding: 12px 16px;
+      margin: 18px 0;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>单加速器单请求推理：多算子/微算子并发</h1>
+  <p class="subtitle">Local-notes bootstrap report · 2026-05-25</p>
+
+  <div class="callout">
+    <strong>核心结论：</strong> 单请求场景下，单纯把框架算子丢进多个 stream 通常不够。
+    更可靠的路线是“语义拆分 + 微算子/多版本 kernel + 硬件资源感知调度/融合”。
+  </div>
+
+  <h2>已完成</h2>
+  <ul>
+    <li>仅使用本地笔记完成第一轮 literature setup，未使用 web search。</li>
+    <li>建立 <code>literature/survey.md</code>、<code>literature/experiment_framework.md</code>。</li>
+    <li>整理 18 个本地笔记来源的单篇摘要，位于 <code>literature/papers/</code>。</li>
+    <li>将研究状态推进到 hypothesis formation，并提出 H1-H4。</li>
+  </ul>
+
+  <h2>方法谱系</h2>
+  <table>
+    <thead>
+      <tr><th>层次</th><th>代表系统</th><th>对本课题的启发</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>运行时共置与空间划分</td>
+        <td>μShare, Bullet, EEVEE</td>
+        <td>通过 MPS、SM mask、block-size shaping、launch timing 控制并发。</td>
+      </tr>
+      <tr>
+        <td>编译生成微算子</td>
+        <td>Infera, STOF, MetaAttention</td>
+        <td>把 operator 切成 tile/micro-operator，并生成可调度的多版本 kernel。</td>
+      </tr>
+      <tr>
+        <td>核内融合与 inter-core 通信</td>
+        <td>FlashFuser, PAT, JanusQuant</td>
+        <td>把并发移入 fused kernel，减少 launch 和 global memory round trip。</td>
+      </tr>
+      <tr>
+        <td>模型语义拆分</td>
+        <td>Difflow, MixFusion, FineMoE, LWD</td>
+        <td>利用 expert、patch、dGraph、denoising step、wavelet saliency 等语义单位。</td>
+      </tr>
+      <tr>
+        <td>硬件/编译协同</td>
+        <td>Focus, V-Rex, RPU, ASM-SpMM</td>
+        <td>对不规则 token/KV/稀疏访问，硬件流水和后端 intrinsic 往往比 GPU stream 更有效。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>初始假设</h2>
+  <ol>
+    <li><strong>H1:</strong> 单请求中，multi-stream 只有在资源互补或空间受控时才有明显收益。</li>
+    <li><strong>H2:</strong> 微算子切分 + 多版本 kernel 会优于粗粒度通用融合。</li>
+    <li><strong>H3:</strong> MoE、Diffusion/DiT、多模态、Video 的语义拆分能暴露通用编译器看不到的并发。</li>
+    <li><strong>H4:</strong> 视频/VLM 的不规则检索和 token 选择更可能需要硬件感知或硬件辅助。</li>
+  </ol>
+
+  <h2>下一步实验框架</h2>
+  <p>
+    第一个 inner-loop 候选是 H1 微基准：构造 compute-bound GEMM/attention、
+    memory-bound layernorm/dequant、elementwise 和 reduction kernel，比较 serial、
+    multi-stream、CUDA Graph、resource-shaped co-location 和 fused/micro-tiled schedule。
+  </p>
+
+  <h2>当前缺口</h2>
+  <ul>
+    <li>本地笔记中 NPU/Ascend/CANN 证据偏少，需要后续定向 local-notes 搜索。</li>
+    <li>许多论文是 multi-request 或 multi-GPU，需要筛掉不适用于单请求/单后端的结论。</li>
+    <li>需要统一指标：overlap ratio、launch count、HBM traffic、SM/Tensor Core/LDST utilization。</li>
+  </ul>
+</main>
+</body>
+</html>
