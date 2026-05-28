@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Outer Loop 5 H4 Runtime Selector Synthesis</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f6f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 58px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1f883d;
+      background: #effaf1;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+    ul {
+      padding-left: 22px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin: 16px 0 24px;
+    }
+    .metric {
+      border: 1px solid #d8dee4;
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #fbfcfe;
+    }
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Outer Loop 5: H4 runtime selector synthesis</h1>
+  <p class="subtitle">H4.1-H4.9 · grouped sparse attention · 2026-05-27</p>
+
+  <div class="verdict">
+    <strong>综合结论：</strong> H4 已经从“写一个更快 sparse attention kernel”
+    变成了完整的编译/运行时方法：把 selected-token retrieval 降到 grouped
+    sparse attention fragment，再用静态资源过滤、order stats、query pressure
+    和 measured full-fragment latency 选择 tile/warp variant。
+  </div>
+
+  <div class="grid">
+    <div class="metric">
+      <strong>8 / 8</strong>
+      H4.8 在 held-out query-count 上 exact best。
+    </div>
+    <div class="metric">
+      <strong>8 / 8</strong>
+      H4.9 在 512/2048 selected tokens 上 15% 内 near-best。
+    </div>
+    <div class="metric">
+      <strong>16 / 16</strong>
+      H4.7+H4.9 observed OOR rows 被静态 feasibility 过滤。
+    </div>
+  </div>
+
+  <h2>证据阶梯</h2>
+  <table>
+    <tr>
+      <th>Step</th>
+      <th>Question</th>
+      <th>Result</th>
+      <th>Meaning</th>
+    </tr>
+    <tr>
+      <td>H4.1-H4.3</td>
+      <td>能否把 Video/VLM sparse retrieval 降到 fused sparse attention?</td>
+      <td>从 52x-64x loop gap 到 5.78x-6.79x score-softmax-value speedup。</td>
+      <td>segment loop 和 gather materialization 都不是合适执行单元。</td>
+    </tr>
+    <tr>
+      <td>H4.4-H4.5</td>
+      <td>能否扩展到 multi-block 和 grouped query?</td>
+      <td>1024 selected tokens 仍快 2.99x-4.76x；Q=4 grouped 快 2.86x-3.64x。</td>
+      <td>online softmax 和 query/head grouping 必须进入 lowering unit。</td>
+    </tr>
+    <tr>
+      <td>H4.6-H4.8</td>
+      <td>runtime table 能否选择 variant?</td>
+      <td>静态过滤 OOR；query-aware selector 修复 Q=8 clustered miss。</td>
+      <td>selector 需要 order stats + query pressure + measured latency。</td>
+    </tr>
+    <tr>
+      <td>H4.9</td>
+      <td>selected-token count 是否是新的 failure axis?</td>
+      <td>512/2048 selected tokens 上 8/8 near-best，mean regret 4.66%。</td>
+      <td>selected-token count 是 exact tuning feature，暂不是 near-best failure。</td>
+    </tr>
+  </table>
+
+  <h2>当前方法</h2>
+  <ul>
+    <li>selected-token set、segment boundary 和 order stats 作为 metadata。</li>
+    <li>K/V movement、score、online softmax、value aggregation 合成 sparse attention fragment。</li>
+    <li>共享 K/V 的多 query/head 被 grouped 到同一 lowering unit。</li>
+    <li>shared-memory feasibility 先过滤 invalid variant，再用 runtime table 选择 measured near-best。</li>
+  </ul>
+
+  <h2>下一步</h2>
+  <p>
+    继续深化一次：H4.10 做 value-dimension held-out shapes。推荐固定
+    selected_tokens=1024、Q=4、四种 order，测试 V=64 和 V=256，并保留
+    BLOCK_V=64/128 的 variant 集合。
+  </p>
+  <ul>
+    <li>如果 H4.8/H4.9 selector 在 V=256 上 miss，说明 value pressure 是下一类 table key。</li>
+    <li>如果仍然 near-best，H4 selector story 足够进入 learned/table selector 或硬件/NPU mapping。</li>
+    <li>硬件解释重点转向 selected-token movement、online reduction、value partial-buffer traffic。</li>
+  </ul>
+</main>
+</body>
+</html>

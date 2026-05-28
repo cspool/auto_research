@@ -1,0 +1,9 @@
+policy,mode,repeat,event_ms,wall_ms
+static_best_average,python_stream,0,2.219007968902588,2.2297219838947058
+static_best_average,python_stream,1,2.148128032684326,2.212845953181386
+static_best_average,cuda_graph_replay,0,2.1585919857025146,2.1490370854735374
+static_best_average,cuda_graph_replay,1,2.141184091567993,2.1814859937876463
+resource_aware,python_stream,0,2.226111888885498,2.20253795851022
+resource_aware,python_stream,1,2.2323200702667236,2.089484012685716
+resource_aware,cuda_graph_replay,0,2.150399923324585,2.174962079152465
+resource_aware,cuda_graph_replay,1,2.141184091567993,2.1457939874380827

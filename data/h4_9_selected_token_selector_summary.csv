@@ -1,0 +1,3 @@
+selector,cases,near_best_count,mean_regret_pct,max_regret_pct,fallback_count
+h4_8_order_query_selector,8,8,4.658446948576336,9.917998884897106,0
+selected_token_pressure_oracle,8,8,0.0,0.0,0

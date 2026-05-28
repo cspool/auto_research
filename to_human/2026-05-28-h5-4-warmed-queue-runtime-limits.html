@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>H5.4 Warmed Queue Runtime Limits</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; background: #f7f8fa; color: #1f2933; }
+main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 56px; }
+h1 { font-size: 32px; margin: 0 0 8px; }
+h2 { font-size: 20px; margin-top: 32px; border-bottom: 1px solid #d8dee6; padding-bottom: 8px; }
+p { line-height: 1.55; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 20px 0; }
+.metric { background: white; border: 1px solid #d8dee6; border-radius: 8px; padding: 16px; }
+.metric .label { color: #52606d; font-size: 13px; }
+.metric .value { font-size: 26px; font-weight: 700; margin-top: 6px; }
+table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #d8dee6; }
+th, td { padding: 10px 12px; border-bottom: 1px solid #e6e9ee; text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+th { background: #eef2f6; font-weight: 650; }
+code { background: #edf2f7; padding: 2px 5px; border-radius: 4px; }
+.note { background: #fff; border-left: 4px solid #2f80ed; padding: 14px 16px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<main>
+<h1>H5.4 Warmed Persistent Queue Runtime Limits</h1>
+<p>Cold compilation and fresh-process cache lookup were removed from the measured path. The remaining question is whether the Python/PyTorch stream queue itself is cheap enough for runtime resource-aware selection.</p>
+<div class="grid">
+  <div class="metric"><div class="label">Resource-aware event median</div><div class="value">2.2338 ms</div></div>
+  <div class="metric"><div class="label">Static-average event median</div><div class="value">2.2662 ms</div></div>
+  <div class="metric"><div class="label">Resource-aware relative speed</div><div class="value">1.0145x</div></div>
+  <div class="metric"><div class="label">CPU enqueue window</div><div class="value">136.16 ms</div></div>
+</div>
+<h2>Policy Timing</h2>
+<table><tr><th>Policy</th><th>Event median ms</th><th>Event range ms</th><th>Wall median ms</th><th>Relative</th></tr>
+<tr><td>static_best_average</td><td>2.2662</td><td>2.2310-2.3839</td><td>2.2664</td><td>1.0000x</td></tr>
+<tr><td>resource_aware</td><td>2.2338</td><td>2.1596-2.3578</td><td>2.2475</td><td>1.0145x</td></tr>
+</table>
+<h2>Nsight Summary</h2>
+<table><tr><th>Component</th><th>Count</th><th>Total ms</th><th>Note</th></tr>
+<tr><td>CUDA runtime API calls</td><td>14978</td><td>96.13</td><td>Includes final synchronization</td></tr>
+<tr><td>Non-sync CUDA API time</td><td>-</td><td>24.77</td><td>Submission and stream/event overhead</td></tr>
+<tr><td>Launch wrappers</td><td>576 runtime + 576 driver</td><td>8.56</td><td>14.87 us per launch pair</td></tr>
+<tr><td>Stream/event management</td><td>-</td><td>16.21</td><td>PyTorch stream waits and event plumbing</td></tr>
+<tr><td>GPU kernels</td><td>1152</td><td>241.89</td><td>Kernel span 206.92 ms</td></tr>
+</table>
+<h2>Conclusion</h2>
+<div class="note">H5.4 supports the overhead story: warmed execution removes Triton cold-start noise, but a Python/PyTorch stream queue still spends enough host-side work on events, waits, and launches that sub-2% selector gains are fragile. The next useful step is graph replay or persistent/batched dispatch, then task migration on a cheaper substrate.</div>
+</main>
+</body>
+</html>

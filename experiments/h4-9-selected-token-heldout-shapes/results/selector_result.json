@@ -1,0 +1,27 @@
+{
+  "status": "ok",
+  "cases": 8,
+  "threshold": 0.15,
+  "shared_limit": 101376,
+  "observed_failed_rows": 8,
+  "static_rejected_failed_rows": 8,
+  "static_rejected_failed_fraction": 1.0,
+  "selector_summary": [
+    {
+      "selector": "h4_8_order_query_selector",
+      "cases": 8,
+      "near_best_count": 8,
+      "mean_regret_pct": 4.658446948576336,
+      "max_regret_pct": 9.917998884897106,
+      "fallback_count": 0
+    },
+    {
+      "selector": "selected_token_pressure_oracle",
+      "cases": 8,
+      "near_best_count": 8,
+      "mean_regret_pct": 0.0,
+      "max_regret_pct": 0.0,
+      "fallback_count": 0
+    }
+  ]
+}

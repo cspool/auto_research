@@ -697,3 +697,351 @@ value-block pressure to the runtime table.
 - `data/h4_8_query_aware_comparison.csv`
 - `data/h4_8_query_aware_summary.csv`
 - `to_human/2026-05-27-h4-8-query-aware-selector.html`
+
+## 2026-05-27 — H4.9 Held-Out Selected-Token Counts
+
+**Protocol**: Locked in
+`experiments/h4-9-selected-token-heldout-shapes/protocol.md`.
+
+**Question**: Does the H4.8 order/query runtime selector generalize to
+held-out selected-token counts `512` and `2048` at `Q=4`?
+
+**Method**: Reused the H4.5 grouped sparse-attention benchmark and six-variant
+candidate set. Ran eight GPU sweeps across two selected-token counts and four
+selected-token orders, then evaluated the H4.8 order/query selector against a
+diagnostic selected-token pressure oracle.
+
+**Valid results**:
+- Static feasibility rejected `8/8` observed shared-memory OOR rows.
+- The H4.8 order/query selector was within `15%` of measured best in `8/8`
+  held-out cases, with mean regret `4.66%` and max regret `9.92%`.
+- The selected-token pressure oracle selected exact measured best in `8/8`
+  cases, showing selected-token count can refine exact tuning but is not an
+  immediate near-best failure mode.
+
+**Decision**: H4.9 supports selected-token-count shape generalization for the
+current selector. Outer Loop 5 is warranted to synthesize H4.1-H4.9 and decide
+whether the next step should deepen with value-dimension held-outs, add a
+learned/table selector over all H4 data, or broaden toward accelerator/NPU
+selected-token movement primitives.
+
+**Artifacts**:
+- `experiments/h4-9-selected-token-heldout-shapes/analysis.md`
+- `data/h4_9_selected_token_variant_rows.csv`
+- `data/h4_9_selected_token_selector_decisions.csv`
+- `data/h4_9_selected_token_selector_summary.csv`
+- `to_human/2026-05-27-h4-9-selected-token-heldouts.html`
+
+## 2026-05-27 — Outer Loop 5 H4 Runtime Selector Synthesis
+
+**Scope**: Synthesized H4.1-H4.9, with emphasis on the H4.6-H4.9
+compiler/runtime selector path.
+
+**Pattern**: H4 now supports a vertical method rather than only a faster kernel:
+lower selected-token retrieval into a grouped sparse-attention fragment, filter
+shared-memory-infeasible variants statically, and select tile/warp variants from
+order/query/shape metadata plus measured full-fragment latency.
+
+**Decision**: Deepen H4 one more step before broadening to NPU/accelerator
+primitives. The next experiment should be H4.10 value-dimension held-outs
+(`V=64/256`, `selected_tokens=1024`, `Q=4`, four selected-token orders). Value
+dimension is the most informative remaining axis because it changes
+`num_v_blocks`, partial value-buffer traffic, and the `BLOCK_V`/warp choice.
+
+**Artifacts**:
+- `synthesis/outer-loop-5-h4.md`
+- `to_human/2026-05-27-outer-loop-5-h4.html`
+
+## 2026-05-27 — Direction Update: Runtime Resource-Aware Scheduling
+
+**User steering**: Refocus the research away from only pursuing single-kernel
+speedups. The more important direction is runtime scheduling of different
+operators or micro-operators according to idle resources. These tasks may
+involve dynamic compilation, runtime task management, backend resource
+management, and task migration. The project should also analyze which software
+and hardware runtime limits constrain performance.
+
+**Interpretation**: This direction is consistent with the existing evidence.
+H1/H1.1 show that ordinary streams and framework chunking provide too little
+control. H2/H2.1 show that the best variant depends on co-scheduling context.
+H2.2 shows compiler metadata can seed a variant table. H3/H4 show that model
+semantics can be lowered into micro-task boundaries suitable for runtime
+queueing and migration.
+
+**Decision**: Add H5: runtime resource-aware task management. H4.10
+value-dimension held-outs remain useful as a selector stress test, but the main
+next phase should measure:
+- resource-aware runtime variant scheduling;
+- dynamic compilation and variant-cache overhead;
+- tile/micro-op task migration boundaries;
+- software/hardware runtime limits such as launch overhead, resource
+  visibility, shared-memory/occupancy ceilings, and SM or pipeline allocation
+  control.
+
+**Artifact**:
+- `synthesis/runtime-resource-scheduling-direction.md`
+
+## 2026-05-27 — GPU Tooling Update
+
+**User update**: Local GPU-related packages were updated/installed to support
+the next experiments.
+
+**Detected tooling**:
+- `nsys` is available on `PATH`: Nsight Systems 2024.6.2.
+- Nsight Compute is installed at `/usr/local/cuda-12.8/bin/ncu`: version
+  2026.2.0.
+- CUDA Toolkit 12.8 developer binaries are installed under
+  `/usr/local/cuda-12.8/bin`: `nvcc`, `cuobjdump`, `nvdisasm`, and
+  `compute-sanitizer`.
+- `trtexec` is available on `PATH`: TensorRT v11.0.0 CLI.
+- Plot/report and literature API packages are now importable: `plotly`,
+  `seaborn`, `weasyprint`, `playwright`, `semanticscholar`, and `arxiv`.
+
+**Parameter update**: Future H5 protocols should include profiler paths and
+keep profiling narrow:
+- use `nsys profile --trace=cuda,nvtx,osrt --stats=true` for launch gaps,
+  CPU submission overhead, stream overlap, and CUDA timeline evidence;
+- use `/usr/local/cuda-12.8/bin/ncu --set speed-of-light` first for
+  representative kernels, then add targeted memory/occupancy sections if needed;
+- use explicit `/usr/local/cuda-12.8/bin/*` paths until the persistent shell
+  `PATH` includes CUDA Toolkit binaries.
+
+**Remaining caveat**: The default sandbox still does not expose `/dev/nvidia*`.
+GPU/profiler runs should continue through the GPU-visible escalated path unless
+the sandbox configuration changes.
+
+**Artifact**:
+- `tooling-gap-audit.md`
+
+## 2026-05-28 — Docker GPU Container Handoff
+
+**Purpose**: Preserve the current auto-research state so a new session can
+continue H5 experiments without rediscovering the GPU/container setup.
+
+**Containerization result**:
+- Built `auto-research-gpu:cu128` from `docker/Dockerfile.gpu`.
+- Docker daemon stores image layers under `/data3/docker`.
+- Final image ID is `292c3482f072`; image size is `17.6GB`.
+- Base image is `nvidia/cuda:12.8.0-devel-ubuntu22.04`.
+- The Dockerfile was corrected so PyTorch installs from the CUDA 12.8 wheel
+  channel instead of accidentally pulling CUDA 13 wheels from default PyPI.
+
+**Verified versions**:
+- `node v20.20.2`
+- `codex-cli 0.134.0`
+- `torch 2.11.0+cu128`
+- `triton 3.6.0`
+
+**Running container**:
+- Name: `auto-research-gpu-dev`
+- Network: `host`
+- IPC: `host`
+- Project bind mount:
+  `/data3/auto_research -> /workspace/auto_research`
+- Cache mount: `/data3/auto_research_docker_cache`
+- Codex home mount: `/data3/auto_research_codex_home`
+
+**GPU smoke test**:
+- Container PyTorch reported `cuda_available True`.
+- It saw `2` GPUs.
+- Device 0 was `NVIDIA GeForce RTX 4090`.
+- A CUDA matmul smoke test completed successfully.
+
+**Continuation modes**:
+- Method 2: keep the outer VS Code/Codex session and run experiments with
+  `docker exec auto-research-gpu-dev ...`. This preserves conversation context
+  while making GPU/profiler runs occur inside the container.
+- Method 3: attach VS Code to `auto-research-gpu-dev`, open
+  `/workspace/auto_research`, and start `codex -C /workspace/auto_research`
+  inside the container. This makes the agent process and experiments both run
+  inside Docker. Codex CLI is installed; Claude CLI is not installed yet.
+
+**Decision**: New sessions should first read `SESSION_HANDOFF.md`,
+`research-state.yaml`, `findings.md`, and
+`synthesis/runtime-resource-scheduling-direction.md`. The next research step
+remains H5.1: a narrow runtime resource-aware micro-task scheduling experiment
+with `nsys` timeline evidence and steady-state versus dynamic compilation/cache
+overhead separated.
+
+**Artifacts**:
+- `SESSION_HANDOFF.md`
+- `docker/Dockerfile.gpu`
+- `docker/run_auto_research_gpu.sh`
+- `docker/README.md`
+## 2026-05-28 — H5.1 Runtime Resource-Aware Selector
+
+**Protocol**: Created `experiments/h5-1-runtime-selector/protocol.md`.
+
+**Tooling fix**: The active container could see CUDA/Triton but lacked Python
+3.10 development headers, `column`, and PATH entries for Nsight tools. Because
+root `apt` was unavailable and `.bashrc` is read-only, persistent local tools
+were installed under `/home/descfly/.local/devtools` and activated with:
+
+```bash
+source /home/descfly/.local/devtools/activate-auto-research.sh
+```
+
+This exposes local Python headers for Triton helper compilation plus `column`,
+`nsys`, and `ncu` wrappers.
+
+**Method**: Built a six-step dependency-aware queue over a Triton fused
+GELU/residual micro-op. Calibrated 10 variants across idle, compute-load, and
+memory-load states for small and large task shapes. Compared static isolated,
+static average, load-aware, resource-aware, and oracle/context table policies.
+
+**Valid results**:
+- Static-best-average median queue latency: `2.1977 ms`.
+- Resource-aware median queue latency: `2.2004 ms` (`1.0044x` vs static isolated).
+- Static-best-isolated median queue latency: `2.2101 ms`.
+- Policy repeats had `8.3%` to `10.6%` min-to-max spread, much larger than the
+  sub-1% median policy differences.
+- Calibration still showed real context dependence: best variants changed across
+  contexts, with `11.8%` to `74.4%` worst/best step-latency spread.
+- First invocation compile/cache proxy was large: median `105.69 ms`, max
+  `824.63 ms`, total `1938.47 ms` across 10 variants.
+
+**Nsight Systems smoke**: Captured
+`experiments/h5-1-runtime-selector/results/nsys_h5_1_tooling_smoke.nsys-rep`
+and `.sqlite`. In the profiled reduced run, CUDA API time was dominated by
+`cudaLaunchKernel` and `cuLibraryLoadData`, while total GPU time for
+`h5_fused_gelu_residual_kernel` was only hundreds of microseconds.
+
+**Decision**: Mark H5.1 as mixed. Runtime context affects best variant choice,
+but Python/CUDA-stream queue dispatch and dynamic loading currently dominate the
+end-to-end objective. Move next to H5.2 compile/cache/launch overhead and H5.4
+Nsight runtime-limit analysis before trusting another scheduler policy.
+
+**Artifacts**:
+- `experiments/h5-1-runtime-selector/code/run_runtime_selector.py`
+- `experiments/h5-1-runtime-selector/analysis.md`
+- `data/h5_1_runtime_selector_summary.csv`
+- `data/h5_1_runtime_selector_policy_results.csv`
+- `to_human/2026-05-28-h5-1-runtime-selector.html`
+
+
+## 2026-05-28 — H5.2 Compile/Cache Overhead
+
+**Protocol**: Created `experiments/h5-2-compile-cache-overhead/protocol.md`.
+
+**Method**: Reused five representative H5.1 fused GELU/residual Triton variants
+and launched worker subprocesses with per-variant `TRITON_CACHE_DIR` directories.
+For each variant, measured an empty-cache cold first launch, two cache-hit first
+launches in a fresh worker, full worker process wall time, and warmed steady-
+state CUDA event latency after warmup.
+
+**Valid results**:
+- Cold first launch wall time: min `1319.75 ms`, median `1391.29 ms`, max
+  `1414.86 ms`.
+- Cache-hit first launch wall time: min `608.68 ms`, median `661.03 ms`, max
+  `740.17 ms`.
+- Warmed steady-state event latency: min `0.1424 ms`, median `0.1439 ms`, max
+  `0.1564 ms`.
+- Median cold overhead versus steady state: `9258.75x`.
+- Median cache-hit first-launch overhead versus steady state: `4637.46x`.
+- Cold process wall median: `4126.22 ms`; cache-hit process wall median:
+  `3383.79 ms`.
+
+**Interpretation**: H5.2 strongly supports the H5.1 overhead diagnosis. Dynamic
+compilation cannot sit on the critical path for fine-grained micro-op variants,
+and even a cache hit in a fresh process is not cheap enough for per-request
+selection. Runtime selector work now needs a warmed persistent process,
+ahead-of-time cache warming, or a coarser/persistent dispatch substrate.
+
+**Decision**: Mark H5.2 complete and move to H5.4: Nsight Systems profiling of a
+warmed queue-only run to separate CPU submission/API time, launch gaps, stream
+overlap, and GPU kernel time. Delay H5.3 task migration until dispatch overhead
+is either reduced or amortized with larger task tiles.
+
+**Artifacts**:
+- `experiments/h5-2-compile-cache-overhead/code/run_compile_cache_overhead.py`
+- `experiments/h5-2-compile-cache-overhead/analysis.md`
+- `experiments/h5-2-compile-cache-overhead/results/rtx4090_default/result.json`
+- `data/h5_2_compile_cache_summary.csv`
+- `data/h5_2_compile_cache_measurements.csv`
+- `to_human/2026-05-28-h5-2-compile-cache-overhead.html`
+
+
+## 2026-05-28 — H5.4 Warmed Queue Runtime Limits
+
+**Protocol**: Created `experiments/h5-4-runtime-limit-profiling/protocol.md`.
+
+**Method**: Reused H5.1 static-best-average and resource-aware policy selections
+inside one persistent process. Precompiled all selected Triton variants, warmed
+background compute/memory work, and warmed both policy queues before measuring.
+The Nsight Systems run used `cudaProfilerStart/Stop` so the clean capture window
+contained warmed queue submission plus one final synchronization; CUDA event and
+wall timings were recorded outside the capture window.
+
+**Valid results**:
+- Static-best-average event median: `2.2662 ms`.
+- Resource-aware event median: `2.2338 ms` (`1.0145x` vs static-best-average).
+- Static-best-average min-to-max event spread: `6.85%`; resource-aware spread:
+  `9.17%`.
+- Clean Nsight capture: `96` queue submissions, `1152` kernels, `136.16 ms` CPU
+  enqueue NVTX window, and `206.92 ms` GPU kernel span.
+- Non-sync CUDA API time was `24.77 ms`; final synchronization wait was
+  `71.36 ms`.
+- PyTorch stream/event management accounted for about `16.21 ms`; CUDA
+  runtime+driver launch wrappers accounted for `8.56 ms` across `576` launches.
+
+**Interpretation**: H5.4 confirms that warming removes the extreme H5.2
+compile/cache costs, but the Python/PyTorch stream-level queue is still too
+expensive for fine-grained runtime-resource decisions. The resource-aware policy
+can win slightly, but the effect is smaller than repeated timing spread.
+
+**Decision**: Move next to a cheaper dispatch substrate: CUDA Graph replay over
+the fixed dependency queue, persistent-kernel/batched dispatch, or larger task
+tiles. Delay H5.3 task migration until dispatch overhead is reduced or amortized.
+
+**Artifacts**:
+- `experiments/h5-4-runtime-limit-profiling/code/run_warmed_queue_profile.py`
+- `experiments/h5-4-runtime-limit-profiling/analysis.md`
+- `experiments/h5-4-runtime-limit-profiling/results/rtx4090_default/nsys_summary.json`
+- `experiments/h5-4-runtime-limit-profiling/results/nsys_h5_4_warmed_queue.nsys-rep`
+- `experiments/h5-4-runtime-limit-profiling/results/nsys_h5_4_warmed_queue.sqlite`
+- `data/h5_4_warmed_queue_summary.csv`
+- `data/h5_4_warmed_queue_measurements.csv`
+- `to_human/2026-05-28-h5-4-warmed-queue-runtime-limits.html`
+
+
+## 2026-05-28 — H5.5 CUDA Graph Dispatch
+
+**Protocol**: Created `experiments/h5-5-cuda-graph-dispatch/protocol.md`.
+
+**Method**: Reused H5.1 queue shapes and policy selections. Measured a plain
+Python/PyTorch stream queue without internal NVTX ranges, captured one CUDA Graph
+per policy, measured `graph.replay()` latency, and profiled graph replay with
+Nsight Systems.
+
+**Valid results**:
+- Both `static_best_average` and `resource_aware` queues captured successfully.
+- Static-best-average graph replay event median: `2.1368 ms` versus Python
+  stream `2.2421 ms`, for `1.0493x` speedup.
+- Resource-aware graph replay event median: `2.1418 ms` versus Python stream
+  `2.2110 ms`, for `1.0323x` speedup.
+- One-time capture wall time was `11.02 ms` for the first/static graph and
+  `1.55 ms` for the second/resource graph.
+- Graph replay profile for 96 queues had `194` CUDA runtime API calls total,
+  `96` `cudaGraphLaunch` calls, and zero `cudaLaunchKernel` calls.
+- CPU enqueue/NVTX window fell from H5.4's `136.16 ms` for 96 stream queues to
+  `4.44 ms` for 96 graph replays, or from `1.418 ms` to `0.046 ms` per queue.
+
+**Interpretation**: Graph replay gives only modest end-to-end event speedup
+because GPU work still dominates, but it strongly fixes the host dispatch path.
+H5 should use graph/persistent/batched dispatch as the substrate for future
+resource-aware scheduling instead of a Python per-kernel queue.
+
+**Decision**: Next H5 step should test graph-bank switching or task migration at
+larger graph-level/batched units. Dynamic compilation remains out of the request
+path, and individual-kernel migration through Python streams is no longer the
+right baseline.
+
+**Artifacts**:
+- `experiments/h5-5-cuda-graph-dispatch/code/run_cuda_graph_dispatch.py`
+- `experiments/h5-5-cuda-graph-dispatch/analysis.md`
+- `experiments/h5-5-cuda-graph-dispatch/results/rtx4090_default/nsys_summary.json`
+- `experiments/h5-5-cuda-graph-dispatch/results/nsys_h5_5_graph_replay.nsys-rep`
+- `experiments/h5-5-cuda-graph-dispatch/results/nsys_h5_5_graph_replay.sqlite`
+- `data/h5_5_cuda_graph_dispatch_summary.csv`
+- `data/h5_5_cuda_graph_dispatch_measurements.csv`
+- `to_human/2026-05-28-h5-5-cuda-graph-dispatch.html`

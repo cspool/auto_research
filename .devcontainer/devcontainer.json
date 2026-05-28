@@ -1,0 +1,46 @@
+{
+  "name": "auto-research-gpu",
+  "image": "auto-research-gpu:cu128",
+  "initializeCommand": "bash -lc 'mkdir -p /data3/auto_research_docker_cache \"$HOME/.codex\" \"$HOME/.claude\" \"$HOME/.ssh\" \"$HOME/.config/gh\" && touch \"$HOME/.claude.json\" \"$HOME/.bashrc\" \"$HOME/.gitconfig\" \"$HOME/.git-credentials\" && chmod 700 \"$HOME/.ssh\"'",
+  "workspaceFolder": "/workspace/auto_research",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/auto_research,type=bind",
+  "remoteUser": "root",
+  "containerEnv": {
+    "HOME": "/root",
+    "NVIDIA_VISIBLE_DEVICES": "all",
+    "NVIDIA_DRIVER_CAPABILITIES": "compute,utility",
+    "HF_HOME": "/data3/auto_research_docker_cache/huggingface",
+    "TORCH_HOME": "/data3/auto_research_docker_cache/torch",
+    "TRITON_CACHE_DIR": "/data3/auto_research_docker_cache/triton",
+    "CODEX_HOME": "/root/.codex"
+  },
+  "runArgs": [
+    "--gpus=all",
+    "--network=host",
+    "--ipc=host",
+    "--ulimit",
+    "memlock=-1",
+    "--ulimit",
+    "stack=67108864"
+  ],
+  "mounts": [
+    "source=/data3/auto_research_docker_cache,target=/data3/auto_research_docker_cache,type=bind",
+    "source=${localEnv:HOME}/.codex,target=/root/.codex,type=bind",
+    "source=${localEnv:HOME}/.claude,target=/root/.claude,type=bind",
+    "source=${localEnv:HOME}/.claude.json,target=/root/.claude.json,type=bind",
+    "source=${localEnv:HOME}/.bashrc,target=/root/.bashrc,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly",
+    "source=${localEnv:HOME}/.git-credentials,target=/root/.git-credentials,type=bind,readonly",
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly",
+    "source=${localEnv:HOME}/.config/gh,target=/root/.config/gh,type=bind"
+  ],
+  "postCreateCommand": "bash -lc 'set -e; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex; command -v claude >/dev/null 2>&1 || npm install -g @anthropic-ai/claude-code'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "OpenAI.chatgpt",
+        "anthropic.claude-code"
+      ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+policy,queue_ms,speedup_vs_static_isolated,regret_vs_oracle_pct,selections
+static_best_isolated,0.823743999004364,1.0,4.168015235219258,"{""compute:large"": ""B1024_W4"", ""compute:small"": ""B1024_W4"", ""idle:large"": ""B1024_W4"", ""idle:small"": ""B1024_W4"", ""memory:large"": ""B1024_W4"", ""memory:small"": ""B1024_W4""}"
+static_best_average,0.8716800212860107,0.9450073179250735,10.229850350723302,"{""compute:large"": ""B512_W4"", ""compute:small"": ""B512_W4"", ""idle:large"": ""B512_W4"", ""idle:small"": ""B512_W4"", ""memory:large"": ""B512_W4"", ""memory:small"": ""B512_W4""}"
+load_aware,0.8478720188140869,0.9715428516635439,7.21916697431868,"{""compute:large"": ""B1024_W4"", ""compute:small"": ""B1024_W4"", ""idle:large"": ""B1024_W4"", ""idle:small"": ""B1024_W4"", ""memory:large"": ""B512_W4"", ""memory:small"": ""B512_W4""}"
+resource_aware,0.8276479840278625,0.9952830368721504,4.661700617932074,"{""compute:large"": ""B1024_W4"", ""compute:small"": ""B1024_W4"", ""idle:large"": ""B512_W4"", ""idle:small"": ""B1024_W4"", ""memory:large"": ""B512_W4"", ""memory:small"": ""B512_W4""}"
+oracle_context,0.7907840013504028,1.0416801523521926,0.0,"{""compute:large"": ""B1024_W4"", ""compute:small"": ""B1024_W4"", ""idle:large"": ""B512_W4"", ""idle:small"": ""B1024_W4"", ""memory:large"": ""B512_W4"", ""memory:small"": ""B512_W4""}"

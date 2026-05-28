@@ -1,0 +1,154 @@
+[
+  {
+    "selected_tokens": 512,
+    "selected_per_segment": 16,
+    "order_mode": "random_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s512/random_segment",
+    "best_triton_grouped_ms": 0.03190783977508545,
+    "best_triton_vs_flat_speedup": 3.2536704824690332,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 8,
+      "num_n_blocks": 4,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "selected_tokens": 512,
+    "selected_per_segment": 16,
+    "order_mode": "random_sorted",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s512/random_sorted",
+    "best_triton_grouped_ms": 0.030266880989074707,
+    "best_triton_vs_flat_speedup": 3.5164297333170538,
+    "best_variant": {
+      "block_n": 64,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 8,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "selected_tokens": 512,
+    "selected_per_segment": 16,
+    "order_mode": "random_shuffled",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s512/random_shuffled",
+    "best_triton_grouped_ms": 0.03176768064498901,
+    "best_triton_vs_flat_speedup": 3.156516300893456,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 4,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "selected_tokens": 512,
+    "selected_per_segment": 16,
+    "order_mode": "clustered_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s512/clustered_segment",
+    "best_triton_grouped_ms": 0.03153343915939331,
+    "best_triton_vs_flat_speedup": 3.010980046019672,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 8,
+      "num_n_blocks": 4,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "selected_tokens": 2048,
+    "selected_per_segment": 64,
+    "order_mode": "random_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s2048/random_segment",
+    "best_triton_grouped_ms": 0.03266304016113281,
+    "best_triton_vs_flat_speedup": 4.029782760014108,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 8,
+      "num_n_blocks": 16,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "selected_tokens": 2048,
+    "selected_per_segment": 64,
+    "order_mode": "random_sorted",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s2048/random_sorted",
+    "best_triton_grouped_ms": 0.03118783950805664,
+    "best_triton_vs_flat_speedup": 3.2727627158758787,
+    "best_variant": {
+      "block_n": 64,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 32,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "selected_tokens": 2048,
+    "selected_per_segment": 64,
+    "order_mode": "random_shuffled",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s2048/random_shuffled",
+    "best_triton_grouped_ms": 0.03090496063232422,
+    "best_triton_vs_flat_speedup": 4.315351383377255,
+    "best_variant": {
+      "block_n": 64,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 4,
+      "num_n_blocks": 32,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  },
+  {
+    "selected_tokens": 2048,
+    "selected_per_segment": 64,
+    "order_mode": "clustered_segment",
+    "out_dir": "/data3/auto_research/experiments/h4-9-selected-token-heldout-shapes/results/s2048/clustered_segment",
+    "best_triton_grouped_ms": 0.031436800956726074,
+    "best_triton_vs_flat_speedup": 3.188273526701579,
+    "best_variant": {
+      "block_n": 128,
+      "block_d": 64,
+      "block_v": 64,
+      "block_q": 4,
+      "warps": 8,
+      "num_n_blocks": 16,
+      "num_v_blocks": 2,
+      "num_q_blocks": 1
+    },
+    "failed_variants": 1
+  }
+]

@@ -1,0 +1,256 @@
+{
+  "summary_rows": [
+    {
+      "policy": "static_best_average",
+      "capture_success": "True",
+      "capture_wall_ms": "11.022715014405549",
+      "capture_error": "",
+      "python_event_median_ms": "2.242143988609314",
+      "graph_event_median_ms": "2.1367520093917847",
+      "speedup_event": "1.0493234492137105",
+      "python_wall_median_ms": "2.2619589581154287",
+      "graph_wall_median_ms": "2.1416054805740714",
+      "speedup_wall": "1.056197781819785"
+    },
+    {
+      "policy": "resource_aware",
+      "capture_success": "True",
+      "capture_wall_ms": "1.5458519337698817",
+      "capture_error": "",
+      "python_event_median_ms": "2.2110239267349243",
+      "graph_event_median_ms": "2.1417760848999023",
+      "speedup_event": "1.0323319707990195",
+      "python_wall_median_ms": "2.212480001617223",
+      "graph_wall_median_ms": "2.507745462935418",
+      "speedup_wall": "0.8822586001321783"
+    }
+  ],
+  "mode_stats": [
+    {
+      "policy": "resource_aware",
+      "mode": "cuda_graph_replay",
+      "event_min_ms": 2.1279680728912354,
+      "event_median_ms": 2.1417760848999023,
+      "event_max_ms": 3.1224000453948975,
+      "wall_min_ms": 2.1365529391914606,
+      "wall_median_ms": 2.507745462935418,
+      "wall_max_ms": 3.251506946980953
+    },
+    {
+      "policy": "resource_aware",
+      "mode": "python_stream",
+      "event_min_ms": 2.137183904647827,
+      "event_median_ms": 2.2110239267349243,
+      "event_max_ms": 2.6437439918518066,
+      "wall_min_ms": 2.144844038411975,
+      "wall_median_ms": 2.212480001617223,
+      "wall_max_ms": 2.2689789766445756
+    },
+    {
+      "policy": "static_best_average",
+      "mode": "cuda_graph_replay",
+      "event_min_ms": 2.1319680213928223,
+      "event_median_ms": 2.1367520093917847,
+      "event_max_ms": 2.173952102661133,
+      "wall_min_ms": 2.136633964255452,
+      "wall_median_ms": 2.1416054805740714,
+      "wall_max_ms": 2.177232992835343
+    },
+    {
+      "policy": "static_best_average",
+      "mode": "python_stream",
+      "event_min_ms": 2.155424118041992,
+      "event_median_ms": 2.242143988609314,
+      "event_max_ms": 2.3429439067840576,
+      "wall_min_ms": 2.1610880503430963,
+      "wall_median_ms": 2.2619589581154287,
+      "wall_max_ms": 2.331161987967789
+    }
+  ],
+  "runtime_top": [
+    {
+      "name": "cudaDeviceSynchronize_v3020",
+      "count": 1,
+      "total_ms": 219.236834,
+      "avg_us": 219236.834,
+      "max_us": 219236.834
+    },
+    {
+      "name": "cudaGraphLaunch_v10000",
+      "count": 96,
+      "total_ms": 3.117302,
+      "avg_us": 32.471895833333335,
+      "max_us": 126.806
+    },
+    {
+      "name": "cudaStreamIsCapturing_v10000",
+      "count": 96,
+      "total_ms": 0.098373,
+      "avg_us": 1.02471875,
+      "max_us": 26.763
+    },
+    {
+      "name": "cuProfilerStart",
+      "count": 1,
+      "total_ms": 0.009761,
+      "avg_us": 9.761,
+      "max_us": 9.761
+    }
+  ],
+  "api_total": {
+    "api_count": 194,
+    "api_total_ms": 222.46227,
+    "api_span_ms": 224.185043
+  },
+  "graph_launch": {
+    "count": 96,
+    "total_ms": 3.117302,
+    "avg_us": 32.471895833333335,
+    "max_us": 126.806
+  },
+  "launch_kernel": {
+    "count": 0,
+    "total_ms": null
+  },
+  "graph_trace": {
+    "graph_trace_count": 96,
+    "graph_trace_total_ms": 222.718136,
+    "graph_trace_span_ms": 223.407405
+  },
+  "graph_events": [
+    {
+      "name": "GraphExec Creation",
+      "count": 2,
+      "total_ms": 0.0,
+      "avg_us": 0.0
+    },
+    {
+      "name": "Graph Creation",
+      "count": 6,
+      "total_ms": 0.0,
+      "avg_us": 0.0
+    }
+  ],
+  "nvtx_top": [
+    {
+      "name": "h5_5_graph_profile_window",
+      "count": 1,
+      "total_ms": 4.443949,
+      "avg_ms": 4.443949
+    },
+    {
+      "name": "h5_5_graph_replay_0_static_best_average",
+      "count": 1,
+      "total_ms": 0.287444,
+      "avg_ms": 0.287444
+    },
+    {
+      "name": "h5_5_graph_replay_5_static_best_average",
+      "count": 1,
+      "total_ms": 0.091761,
+      "avg_ms": 0.091761
+    },
+    {
+      "name": "h5_5_graph_replay_0_resource_aware",
+      "count": 1,
+      "total_ms": 0.080152,
+      "avg_ms": 0.080152
+    },
+    {
+      "name": "h5_5_graph_replay_1_static_best_average",
+      "count": 1,
+      "total_ms": 0.069073,
+      "avg_ms": 0.069073
+    },
+    {
+      "name": "h5_5_graph_replay_3_static_best_average",
+      "count": 1,
+      "total_ms": 0.063323,
+      "avg_ms": 0.063323
+    },
+    {
+      "name": "h5_5_graph_replay_1_resource_aware",
+      "count": 1,
+      "total_ms": 0.062761,
+      "avg_ms": 0.062761
+    },
+    {
+      "name": "h5_5_graph_replay_3_resource_aware",
+      "count": 1,
+      "total_ms": 0.061237,
+      "avg_ms": 0.061237
+    },
+    {
+      "name": "h5_5_graph_replay_2_resource_aware",
+      "count": 1,
+      "total_ms": 0.060757,
+      "avg_ms": 0.060757
+    },
+    {
+      "name": "h5_5_graph_replay_2_static_best_average",
+      "count": 1,
+      "total_ms": 0.059975,
+      "avg_ms": 0.059975
+    },
+    {
+      "name": "h5_5_graph_replay_4_static_best_average",
+      "count": 1,
+      "total_ms": 0.059135,
+      "avg_ms": 0.059135
+    },
+    {
+      "name": "h5_5_graph_replay_4_resource_aware",
+      "count": 1,
+      "total_ms": 0.057854,
+      "avg_ms": 0.057854
+    },
+    {
+      "name": "h5_5_graph_replay_5_resource_aware",
+      "count": 1,
+      "total_ms": 0.054474,
+      "avg_ms": 0.054474
+    },
+    {
+      "name": "h5_5_graph_replay_21_static_best_average",
+      "count": 1,
+      "total_ms": 0.046083,
+      "avg_ms": 0.046083
+    },
+    {
+      "name": "h5_5_graph_replay_29_resource_aware",
+      "count": 1,
+      "total_ms": 0.043502,
+      "avg_ms": 0.043502
+    },
+    {
+      "name": "h5_5_graph_replay_15_static_best_average",
+      "count": 1,
+      "total_ms": 0.043142,
+      "avg_ms": 0.043142
+    },
+    {
+      "name": "h5_5_graph_replay_41_static_best_average",
+      "count": 1,
+      "total_ms": 0.042177,
+      "avg_ms": 0.042177
+    },
+    {
+      "name": "h5_5_graph_replay_13_static_best_average",
+      "count": 1,
+      "total_ms": 0.041364,
+      "avg_ms": 0.041364
+    },
+    {
+      "name": "h5_5_graph_replay_9_static_best_average",
+      "count": 1,
+      "total_ms": 0.041139,
+      "avg_ms": 0.041139
+    },
+    {
+      "name": "h5_5_graph_replay_17_resource_aware",
+      "count": 1,
+      "total_ms": 0.04076,
+      "avg_ms": 0.04076
+    }
+  ]
+}

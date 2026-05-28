@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H4.9 Selected-Token Heldouts</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2328;
+      background: #f7f8fa;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1060px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      padding: 40px 24px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 31px;
+      margin: 0 0 8px;
+    }
+    h2 {
+      font-size: 21px;
+      margin-top: 32px;
+      border-bottom: 1px solid #d8dee4;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      color: #59636e;
+      margin-bottom: 24px;
+    }
+    .verdict {
+      border-left: 4px solid #1a7f37;
+      background: #f0fff4;
+      padding: 14px 16px;
+      margin: 18px 0 24px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin: 12px 0 22px;
+    }
+    th, td {
+      border: 1px solid #d8dee4;
+      padding: 9px 10px;
+      vertical-align: top;
+    }
+    th {
+      text-align: left;
+      background: #f1f4f8;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>H4.9: selected-token heldout shapes</h1>
+  <p class="subtitle">512/2048 selected tokens · Q=4 · grouped sparse attention · 2026-05-27</p>
+
+  <div class="verdict">
+    <strong>阶段性结论：</strong> H4.8 runtime selector 在 selected-token count
+    heldout 上仍然稳：512/2048 selected tokens 共 8 个 cases 全部落在 measured
+    best 的 15% 内，mean regret 4.66%，max regret 9.92%。selected-token pressure
+    可以优化 exact choice，但不是 near-best 的硬失败点。
+  </div>
+
+  <h2>选择质量</h2>
+  <table>
+    <tr>
+      <th>Selector</th>
+      <th>Near-best cases</th>
+      <th>Mean regret</th>
+      <th>Max regret</th>
+    </tr>
+    <tr>
+      <td>H4.8 order/query selector</td>
+      <td>8/8</td>
+      <td>4.66%</td>
+      <td>9.92%</td>
+    </tr>
+    <tr>
+      <td>selected-token pressure oracle</td>
+      <td>8/8</td>
+      <td>0.00%</td>
+      <td>0.00%</td>
+    </tr>
+  </table>
+
+  <h2>最大 regret</h2>
+  <table>
+    <tr>
+      <th>Case</th>
+      <th>H4.8 selected</th>
+      <th>Measured best</th>
+      <th>Regret</th>
+    </tr>
+    <tr>
+      <td>512 selected · random shuffled</td>
+      <td>N128 D64 V64 Q4 W8</td>
+      <td>N128 D64 V64 Q4 W4</td>
+      <td>9.92%</td>
+    </tr>
+    <tr>
+      <td>512 selected · clustered segment</td>
+      <td>N128 D128 V64 Q4 W4</td>
+      <td>N128 D64 V64 Q4 W8</td>
+      <td>8.46%</td>
+    </tr>
+  </table>
+
+  <h2>解释</h2>
+  <p>
+    selected-token count 会改变 exact best variant：512 selected tokens 下 launch
+    和 reduction overhead 更显眼，2048 selected tokens 下 block 数和 warp choice
+    更敏感。但 H4.8 的 order/query selector 仍然保持 near-best，这说明当前 runtime
+    table 已经有一定 shape 泛化能力。
+  </p>
+  <p>
+    下一步该做 Outer Loop 5，把 H4.1-H4.9 合成成方法论：semantic sparse retrieval
+    如何从 framework loop 被降到 grouped sparse attention micro-operator，再由
+    static feasibility + request-shape metadata + measured latency table 选择实现。
+  </p>
+</main>
+</body>
+</html>
+

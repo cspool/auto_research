@@ -1,0 +1,3 @@
+variant_id,block_size,warps,first_invocation_wall_ms
+B512_W4,512,4,665.8414819976315
+B1024_W4,1024,4,73.29985103569925

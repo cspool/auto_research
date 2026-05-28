@@ -15,6 +15,25 @@ The core mechanism stack is:
 4. verify that launch overhead, global-memory traffic, and resource contention
    do not erase the concurrency benefit.
 
+The research emphasis is now sharper: single-kernel acceleration is not the
+main remaining opportunity. The more important target is runtime support for
+resource-aware task orchestration: dynamically selecting or compiling
+operator/micro-operator variants, observing available accelerator resources,
+managing dependency-aware task queues, and allowing remaining work to migrate at
+tile or micro-op boundaries. The existing H2-H4 results should be treated as
+building blocks for this runtime rather than as isolated kernel wins.
+
+H5.1 tested that runtime direction directly. It produced a useful mixed result:
+a context-aware table did recover different best Triton fused micro-op variants
+for different load and task-shape contexts, but the Python/CUDA-stream queue did
+not show a robust end-to-end win. Static-best-average, resource-aware,
+load-aware, and static-isolated policies all landed within about 0.6% median
+queue latency, while repeated queue timings varied by 8.3%-10.6%. A lightweight
+Nsight Systems profile confirmed the mechanism: launch and dynamic loading API
+time dominates the tiny fused-kernel GPU work. This moves H5 from "choose the
+right table entry" toward "make dispatch, cache state, and resource observation
+cheap enough for the table to matter."
+
 H1 now has preliminary experimental support on an RTX 4090. A microbenchmark
 with independent compute, elementwise/memory, and reduction operators showed
 that naive multi-stream execution produced only -0.3% to +4.3% serial speedup
@@ -263,8 +282,86 @@ The analysis is organized along four axes:
   8/8 H4.7 held-out query-count cases. This supports the feature diagnosis, but
   not broad generalization yet: the next test must hold out selected-token count
   or value dimension.
+- H4.9 provides that selected-token-count hold-out. At `512` and `2048`
+  selected tokens with `Q=4`, static feasibility rejected all 8/8 observed OOR
+  rows and the H4.8 order/query selector stayed within 15% of measured best in
+  8/8 cases. Mean regret was 4.66% and max regret was 9.92%. A diagnostic
+  selected-token pressure oracle selected exact best in 8/8, so selected-token
+  count is useful for exact tuning but not yet a near-best failure mode.
+- Outer Loop 5 consolidates H4 into a runtime-selector method. The current
+  compiler/runtime contract has static shared-memory feasibility, selected-token
+  order statistics, query-pressure features, shape metadata, and measured
+  full-fragment latency. The next best stress test is value dimension because it
+  changes `num_v_blocks`, partial-buffer traffic, and `BLOCK_V` choice more
+  directly than selected-token count did.
+- A user-guided direction update reframes the next phase as H5: runtime
+  resource-aware task management. The key system question is how to schedule
+  different operators or micro-operators according to idle resources when those
+  tasks may be dynamically compiled, queued, and migrated at runtime. This
+  shifts the central contribution from single-kernel speedups toward software
+  and hardware runtime support: resource visibility, task queues, dependency
+  tracking, variant caches, task migration boundaries, and backend controls such
+  as streams, graphs, MPS/SM partitioning, persistent queues, or NPU pipeline
+  ports.
+
+- H5.1 shows the first runtime-selector boundary. Calibrated context matters:
+  best variants changed across compute, memory, idle, small, and large tasks,
+  with 11.8%-74.4% worst/best spread in the calibration table. But end-to-end
+  Python-level queue policies differed by less than the 8.3%-10.6% repeated
+  timing spread, and Nsight Systems showed launch/loading API time dominating
+  the tiny GPU kernels. The next H5 experiments must measure and reduce runtime
+  overhead, not just improve selector rules.
+
+- H5.2 strongly confirms the overhead diagnosis. Across five representative
+  H5.1 Triton variants, cold first launch took 1.32-1.41 s, cache-hit first
+  launch in a fresh worker still took 0.61-0.74 s, and warmed steady-state
+  event latency was only 0.142-0.156 ms. That puts cold and cache-hit first
+  launches around 9,000x and 4,600x above the warmed micro-op path, so per-
+  request compilation and fresh-process cache hits are not viable scheduling
+  mechanisms for fine-grained single-request micro-operators.
+
+- H5.4 removes cold-start noise and exposes the next boundary. In a warmed
+  persistent process, `resource_aware` was 1.0145x faster than
+  `static_best_average` by median event timing, but min-to-max spread was still
+  6.85%-9.17%. Nsight Systems showed the Python/PyTorch stream queue enqueued
+  each six-step queue in about 1.418 ms, with 16.21 ms of stream/event
+  management and 8.56 ms of launch-wrapper overhead across 576 captured
+  launches. The selector can help, but the dispatch substrate is now the main
+  limiter.
+
+- H5.5 is the first clearly positive dispatch-substrate result. CUDA Graph replay
+  captured both fixed policy queues successfully and improved median event
+  latency by 1.0493x for `static_best_average` and 1.0323x for
+  `resource_aware`. Nsight Systems showed the comparable 96-queue host path
+  dropping from 14978 CUDA runtime API calls in H5.4 to 194, with zero
+  `cudaLaunchKernel` calls, 96 `cudaGraphLaunch` calls, and CPU enqueue per
+  queue falling from 1.418 ms to about 0.046 ms.
 
 ## Lessons and Constraints
+
+- H5.1 rules out a naive Python-level offline variant-table scheduler for
+  fine-grained micro-tasks. The selector signal exists in calibration, but
+  dispatch jitter, launch overhead, and dynamic loading hide sub-1% policy
+  differences at queue level. H5.2 confirms that compile/cache/first-launch
+  overhead dominates by orders of magnitude; H5.4 should now measure warmed
+  persistent queue execution before another scheduler policy is trusted.
+- H5.2 rules out per-request cold compilation and fresh-process cache-hit lookup
+  for micro-op variant selection. A practical runtime needs ahead-of-time cache
+  warming, a persistent process with loaded modules, asynchronous compilation
+  behind a fallback variant, coarser migration-safe task tiles, or CUDA
+  Graph/persistent-kernel/batched dispatch.
+- H5.4 rules out treating a Python/PyTorch stream queue as the final runtime
+  substrate for fine-grained migration. Even warmed execution spends enough on
+  event/wait/launch plumbing that sub-2% policy differences are fragile.
+- H5.5 supports CUDA Graph replay as a viable fixed-queue dispatch substrate.
+  The next challenge is not raw launch overhead but flexibility: graph-bank
+  switching, graph-level task migration, or larger batched units that preserve
+  resource-aware choices without returning to per-kernel Python dispatch.
+- Container tooling is now locally available without `/tmp` header workarounds:
+  source `/home/descfly/.local/devtools/activate-auto-research.sh` to expose
+  Python 3.10 development headers for Triton, `column`, `nsys`, and `ncu`.
+  `.bashrc` is read-only in this container, so activation must be explicit per
+  shell or command.
 
 - Multi-request serving papers are useful but must be filtered: the project
   targets single request and single accelerator, so batching/goodput claims are
@@ -287,9 +384,11 @@ The analysis is organized along four axes:
 - Stream speedup can be misleading when the serial baseline differs across
   variants. The scheduler's primary metric for single-request latency should be
   absolute concurrent latency, with speedup and overlap as diagnostics.
-- Nsight Compute/System was not available in the current environment. Triton
-  cache metadata is a useful fallback for compiler-facing analysis, but true
-  hardware-architecture claims still need SM/SFU/DRAM counters.
+- Nsight Systems is now available on `PATH`, and Nsight Compute is available at
+  `/usr/local/cuda-12.8/bin/ncu`. Older H2-H4 conclusions remain latency-based,
+  but new H5/H4 follow-ups should collect launch-gap, occupancy, SM/SFU/DRAM,
+  LDST/Tensor Core, and HBM traffic counters where profiling overhead is
+  acceptable.
 - The current MoE experiment excludes routing/top-k and scatter/gather costs.
   Future MoE experiments should add those back after the expert compute unit is
   represented below the PyTorch loop level.
@@ -340,7 +439,21 @@ The analysis is organized along four axes:
   dimensions, and candidate variants fixed. The next shape-generalization step
   should add selected-token or value-dimension variation and include
   query-count-aware features in the selector.
-- H4.8 is a retrospective selector repair. It should be followed by a true
-  held-out shape test, preferably selected-token counts `512/2048` at `Q=4`, to
-  see whether `num_n_blocks` and selected-token blocking pressure are the next
-  missing features.
+- H4.9 makes Outer Loop 5 the right next move. The H4 compiler/runtime story now
+  has evidence for sparse retrieval fusion, online-softmax scaling,
+  query-grouping, static resource filtering, query-aware selection, and
+  selected-token-count hold-out generalization. The next decision is whether to
+  deepen with value-dimension held-outs and a learned/table selector, or broaden
+  toward accelerator/NPU selected-token movement and online-reduction
+  primitives.
+- Outer Loop 5 chooses to deepen once more with H4.10 value-dimension held-outs
+  before broadening. If `V=64/256` still stays near-best, the next step can move
+  to a learned/table selector over all H4 data or to hardware/NPU mapping. If it
+  misses, value pressure becomes the next required selector feature.
+- H4.10 should now be treated as a selector stress test, not the main research
+  story. The next main branch is H5: build experiments around runtime resource
+  observation, dynamic compilation/cache overhead, micro-task queueing, and
+  migration boundaries. Performance limitations should be attributed to
+  software/hardware runtime support whenever possible, especially launch
+  overhead, weak resource visibility, shared-memory/occupancy ceilings, and
+  limited control over SM or accelerator pipeline allocation.

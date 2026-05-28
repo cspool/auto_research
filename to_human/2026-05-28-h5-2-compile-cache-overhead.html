@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>H5.2 Compile and Cache Overhead</title>
+<style>
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; color: #1f2328; background: #f6f7f9; }
+main { max-width: 1020px; margin: 0 auto; padding: 44px 28px 64px; }
+h1 { font-size: 34px; margin: 0 0 10px; letter-spacing: 0; }
+h2 { margin-top: 32px; font-size: 22px; }
+p { line-height: 1.55; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 22px 0; }
+.card { background: white; border: 1px solid #d9dee7; border-radius: 8px; padding: 16px; }
+.metric { font-size: 28px; font-weight: 760; }
+.label { color: #57606a; font-size: 13px; margin-top: 4px; }
+table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #d9dee7; border-radius: 8px; overflow: hidden; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e6e9ef; font-size: 14px; }
+th { background: #edf2f7; }
+.note { border-left: 4px solid #cf6a00; padding: 12px 14px; background: #fff4e6; }
+</style>
+</head>
+<body>
+<main>
+<h1>H5.2 Dynamic Compile and Cache Overhead</h1>
+<p class="note">Result: cold compile and cache-hit first launch are thousands of times slower than warmed steady-state micro-op execution. H5 runtime scheduling needs prewarm, persistence, or coarser task granularity.</p>
+<div class="grid">
+  <div class="card"><div class="metric">1391 ms</div><div class="label">median cold first launch</div></div>
+  <div class="card"><div class="metric">661 ms</div><div class="label">median cache-hit first launch</div></div>
+  <div class="card"><div class="metric">0.144 ms</div><div class="label">median steady-state event time</div></div>
+  <div class="card"><div class="metric">9259x</div><div class="label">median cold/steady overhead ratio</div></div>
+</div>
+<h2>Summary</h2>
+<table>
+<tr><th>Variant</th><th>Cold first ms</th><th>Cache-hit first ms</th><th>Steady ms</th><th>Cold ratio</th><th>Hit ratio</th></tr>
+<tr><td>B1024_W8</td><td>1375.76</td><td>728.53</td><td>0.1424</td><td>9662x</td><td>5117x</td></tr>
+<tr><td>B2048_W8</td><td>1319.75</td><td>661.03</td><td>0.1425</td><td>9259x</td><td>4637x</td></tr>
+<tr><td>B4096_W4</td><td>1414.86</td><td>608.68</td><td>0.1439</td><td>9835x</td><td>4231x</td></tr>
+<tr><td>B512_W4</td><td>1409.72</td><td>740.17</td><td>0.1564</td><td>9015x</td><td>4733x</td></tr>
+<tr><td>B8192_W8</td><td>1391.29</td><td>649.45</td><td>0.1531</td><td>9090x</td><td>4243x</td></tr>
+</table>
+<h2>Implication</h2>
+<p>The selector cannot compile or load variants on the request path at this granularity. The next runtime design needs a persistent warmed process, precompiled variant tables, fallback variants during async compile, or larger task tiles that amortize dispatch.</p>
+</main>
+</body>
+</html>

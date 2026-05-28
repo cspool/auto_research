@@ -1,0 +1,128 @@
+{
+  "status": "ok",
+  "args": {
+    "out_dir": "experiments/h5-5-cuda-graph-dispatch/results/smoke",
+    "data_dir": "data",
+    "h5_1_result": "/workspace/auto_research/experiments/h5-1-runtime-selector/results/rtx4090_default/result.json",
+    "policies": "static_best_average,resource_aware",
+    "small_elements": 8388608,
+    "large_elements": 16777216,
+    "matrix_size": 2048,
+    "memory_elements": 67108864,
+    "scale": 0.75,
+    "warmup_queues": 1,
+    "iters": 2,
+    "profile_repeats": 2,
+    "profile_capture": false,
+    "seed": 20260528
+  },
+  "variant_ids": [
+    "B1024_W4",
+    "B2048_W8",
+    "B4096_W4",
+    "B512_W4",
+    "B8192_W8"
+  ],
+  "raw_selections": {
+    "static_best_average": {
+      "compute:large": "B8192_W8",
+      "compute:small": "B8192_W8",
+      "idle:large": "B8192_W8",
+      "idle:small": "B8192_W8",
+      "memory:large": "B8192_W8",
+      "memory:small": "B8192_W8"
+    },
+    "resource_aware": {
+      "compute:large": "B512_W4",
+      "compute:small": "B8192_W8",
+      "idle:large": "B4096_W4",
+      "idle:small": "B2048_W8",
+      "memory:large": "B8192_W8",
+      "memory:small": "B1024_W4"
+    }
+  },
+  "summary": [
+    {
+      "policy": "static_best_average",
+      "capture_success": true,
+      "capture_wall_ms": 5.441716988570988,
+      "capture_error": "",
+      "python_event_median_ms": 2.183568000793457,
+      "graph_event_median_ms": 2.149888038635254,
+      "speedup_event": 1.0156659144815667,
+      "python_wall_median_ms": 2.221283968538046,
+      "graph_wall_median_ms": 2.165261539630592,
+      "speedup_wall": 1.0258732849967915
+    },
+    {
+      "policy": "resource_aware",
+      "capture_success": true,
+      "capture_wall_ms": 0.8516589878126979,
+      "capture_error": "",
+      "python_event_median_ms": 2.229215979576111,
+      "graph_event_median_ms": 2.145792007446289,
+      "speedup_event": 1.0388779396326975,
+      "python_wall_median_ms": 2.146010985597968,
+      "graph_wall_median_ms": 2.160378033295274,
+      "speedup_wall": 0.9933497529247735
+    }
+  ],
+  "measurements": [
+    {
+      "policy": "static_best_average",
+      "mode": "python_stream",
+      "repeat": 0,
+      "event_ms": 2.219007968902588,
+      "wall_ms": 2.2297219838947058
+    },
+    {
+      "policy": "static_best_average",
+      "mode": "python_stream",
+      "repeat": 1,
+      "event_ms": 2.148128032684326,
+      "wall_ms": 2.212845953181386
+    },
+    {
+      "policy": "static_best_average",
+      "mode": "cuda_graph_replay",
+      "repeat": 0,
+      "event_ms": 2.1585919857025146,
+      "wall_ms": 2.1490370854735374
+    },
+    {
+      "policy": "static_best_average",
+      "mode": "cuda_graph_replay",
+      "repeat": 1,
+      "event_ms": 2.141184091567993,
+      "wall_ms": 2.1814859937876463
+    },
+    {
+      "policy": "resource_aware",
+      "mode": "python_stream",
+      "repeat": 0,
+      "event_ms": 2.226111888885498,
+      "wall_ms": 2.20253795851022
+    },
+    {
+      "policy": "resource_aware",
+      "mode": "python_stream",
+      "repeat": 1,
+      "event_ms": 2.2323200702667236,
+      "wall_ms": 2.089484012685716
+    },
+    {
+      "policy": "resource_aware",
+      "mode": "cuda_graph_replay",
+      "repeat": 0,
+      "event_ms": 2.150399923324585,
+      "wall_ms": 2.174962079152465
+    },
+    {
+      "policy": "resource_aware",
+      "mode": "cuda_graph_replay",
+      "repeat": 1,
+      "event_ms": 2.141184091567993,
+      "wall_ms": 2.1457939874380827
+    }
+  ]
+}

@@ -1,0 +1,399 @@
+{
+  "status": "ok",
+  "args": {
+    "out_dir": "experiments/h5-1-runtime-selector/results/tooling_smoke",
+    "data_dir": "data",
+    "block_sizes": "512,1024",
+    "warps": "4",
+    "small_elements": 262144,
+    "large_elements": 524288,
+    "matrix_size": 512,
+    "memory_elements": 1048576,
+    "scale": 0.75,
+    "warmup": 2,
+    "iters": 4,
+    "policy_warmup": 1,
+    "policy_iters": 2,
+    "policy_repeats": 1,
+    "seed": 1234
+  },
+  "queue": [
+    {
+      "step": 0,
+      "load_class": "compute",
+      "shape_label": "small"
+    },
+    {
+      "step": 1,
+      "load_class": "memory",
+      "shape_label": "large"
+    },
+    {
+      "step": 2,
+      "load_class": "compute",
+      "shape_label": "large"
+    },
+    {
+      "step": 3,
+      "load_class": "memory",
+      "shape_label": "small"
+    },
+    {
+      "step": 4,
+      "load_class": "compute",
+      "shape_label": "small"
+    },
+    {
+      "step": 5,
+      "load_class": "memory",
+      "shape_label": "large"
+    }
+  ],
+  "shapes": {
+    "small": {
+      "label": "small",
+      "n_elements": 262144
+    },
+    "large": {
+      "label": "large",
+      "n_elements": 524288
+    }
+  },
+  "variants": [
+    {
+      "block_size": 512,
+      "warps": 4,
+      "variant_id": "B512_W4"
+    },
+    {
+      "block_size": 1024,
+      "warps": 4,
+      "variant_id": "B1024_W4"
+    }
+  ],
+  "first_call_rows": [
+    {
+      "variant_id": "B512_W4",
+      "block_size": 512,
+      "warps": 4,
+      "first_invocation_wall_ms": 665.8414819976315
+    },
+    {
+      "variant_id": "B1024_W4",
+      "block_size": 1024,
+      "warps": 4,
+      "first_invocation_wall_ms": 73.29985103569925
+    }
+  ],
+  "background_rows": [
+    {
+      "load_class": "idle",
+      "background_only_ms": 0.0
+    },
+    {
+      "load_class": "compute",
+      "background_only_ms": 0.01817600056529045
+    },
+    {
+      "load_class": "memory",
+      "background_only_ms": 0.012543999589979649
+    }
+  ],
+  "calibration_rows": [
+    {
+      "load_class": "idle",
+      "shape_label": "small",
+      "n_elements": 262144,
+      "variant_id": "B512_W4",
+      "block_size": 512,
+      "warps": 4,
+      "isolated_ms": 0.030719999223947525,
+      "background_only_ms": 0.0,
+      "step_ms": 0.09499199688434601,
+      "overlap_ratio": 0.0
+    },
+    {
+      "load_class": "compute",
+      "shape_label": "small",
+      "n_elements": 262144,
+      "variant_id": "B512_W4",
+      "block_size": 512,
+      "warps": 4,
+      "isolated_ms": 0.030719999223947525,
+      "background_only_ms": 0.01817600056529045,
+      "step_ms": 0.15564799308776855,
+      "overlap_ratio": -2.1832459456535487
+    },
+    {
+      "load_class": "memory",
+      "shape_label": "small",
+      "n_elements": 262144,
+      "variant_id": "B512_W4",
+      "block_size": 512,
+      "warps": 4,
+      "isolated_ms": 0.030719999223947525,
+      "background_only_ms": 0.012543999589979649,
+      "step_ms": 0.1377280056476593,
+      "overlap_ratio": -2.183432170475261
+    },
+    {
+      "load_class": "idle",
+      "shape_label": "small",
+      "n_elements": 262144,
+      "variant_id": "B1024_W4",
+      "block_size": 1024,
+      "warps": 4,
+      "isolated_ms": 0.02630399912595749,
+      "background_only_ms": 0.0,
+      "step_ms": 0.09108000248670578,
+      "overlap_ratio": 0.0
+    },
+    {
+      "load_class": "compute",
+      "shape_label": "small",
+      "n_elements": 262144,
+      "variant_id": "B1024_W4",
+      "block_size": 1024,
+      "warps": 4,
+      "isolated_ms": 0.02630399912595749,
+      "background_only_ms": 0.01817600056529045,
+      "step_ms": 0.595408022403717,
+      "overlap_ratio": -12.38597181961923
+    },
+    {
+      "load_class": "memory",
+      "shape_label": "small",
+      "n_elements": 262144,
+      "variant_id": "B1024_W4",
+      "block_size": 1024,
+      "warps": 4,
+      "isolated_ms": 0.02630399912595749,
+      "background_only_ms": 0.012543999589979649,
+      "step_ms": 0.13619199395179749,
+      "overlap_ratio": -2.505766022791944
+    },
+    {
+      "load_class": "idle",
+      "shape_label": "large",
+      "n_elements": 524288,
+      "variant_id": "B512_W4",
+      "block_size": 512,
+      "warps": 4,
+      "isolated_ms": 0.02643200010061264,
+      "background_only_ms": 0.0,
+      "step_ms": 0.07813599705696106,
+      "overlap_ratio": 0.0
+    },
+    {
+      "load_class": "compute",
+      "shape_label": "large",
+      "n_elements": 524288,
+      "variant_id": "B512_W4",
+      "block_size": 512,
+      "warps": 4,
+      "isolated_ms": 0.02643200010061264,
+      "background_only_ms": 0.01817600056529045,
+      "step_ms": 0.12624000012874603,
+      "overlap_ratio": -1.8299856134381693
+    },
+    {
+      "load_class": "memory",
+      "shape_label": "large",
+      "n_elements": 524288,
+      "variant_id": "B512_W4",
+      "block_size": 512,
+      "warps": 4,
+      "isolated_ms": 0.02643200010061264,
+      "background_only_ms": 0.012543999589979649,
+      "step_ms": 0.11363200098276138,
+      "overlap_ratio": -1.9154351879315352
+    },
+    {
+      "load_class": "idle",
+      "shape_label": "large",
+      "n_elements": 524288,
+      "variant_id": "B1024_W4",
+      "block_size": 1024,
+      "warps": 4,
+      "isolated_ms": 0.07088000327348709,
+      "background_only_ms": 0.0,
+      "step_ms": 0.07321599870920181,
+      "overlap_ratio": 0.0
+    },
+    {
+      "load_class": "compute",
+      "shape_label": "large",
+      "n_elements": 524288,
+      "variant_id": "B1024_W4",
+      "block_size": 1024,
+      "warps": 4,
+      "isolated_ms": 0.07088000327348709,
+      "background_only_ms": 0.01817600056529045,
+      "step_ms": 0.1382399946451187,
+      "overlap_ratio": -0.5522815833436829
+    },
+    {
+      "load_class": "memory",
+      "shape_label": "large",
+      "n_elements": 524288,
+      "variant_id": "B1024_W4",
+      "block_size": 1024,
+      "warps": 4,
+      "isolated_ms": 0.07088000327348709,
+      "background_only_ms": 0.012543999589979649,
+      "step_ms": 0.137472003698349,
+      "overlap_ratio": -0.6478711039955516
+    }
+  ],
+  "policy_measurements": [
+    {
+      "repeat": 0,
+      "policy": "static_best_average",
+      "queue_ms": 0.9907199740409851
+    },
+    {
+      "repeat": 0,
+      "policy": "load_aware",
+      "queue_ms": 1.0137439966201782
+    },
+    {
+      "repeat": 0,
+      "policy": "oracle_context",
+      "queue_ms": 0.8893439769744873
+    },
+    {
+      "repeat": 0,
+      "policy": "static_best_isolated",
+      "queue_ms": 0.9605759978294373
+    },
+    {
+      "repeat": 0,
+      "policy": "resource_aware",
+      "queue_ms": 0.9555680155754089
+    }
+  ],
+  "policy_rows": [
+    {
+      "policy": "static_best_isolated",
+      "queue_ms": 0.9605759978294373,
+      "queue_mean_ms": 0.9605759978294373,
+      "queue_min_ms": 0.9605759978294373,
+      "queue_max_ms": 0.9605759978294373,
+      "selections": {
+        "compute:large": "B512_W4",
+        "compute:small": "B512_W4",
+        "idle:large": "B512_W4",
+        "idle:small": "B512_W4",
+        "memory:large": "B512_W4",
+        "memory:small": "B512_W4"
+      },
+      "speedup_vs_static_isolated": 1.0,
+      "regret_vs_oracle_pct": 8.009501688792952
+    },
+    {
+      "policy": "static_best_average",
+      "queue_ms": 0.9907199740409851,
+      "queue_mean_ms": 0.9907199740409851,
+      "queue_min_ms": 0.9907199740409851,
+      "queue_max_ms": 0.9907199740409851,
+      "selections": {
+        "compute:large": "B512_W4",
+        "compute:small": "B512_W4",
+        "idle:large": "B512_W4",
+        "idle:small": "B512_W4",
+        "memory:large": "B512_W4",
+        "memory:small": "B512_W4"
+      },
+      "speedup_vs_static_isolated": 0.9695736666248935,
+      "regret_vs_oracle_pct": 11.398963695844078
+    },
+    {
+      "policy": "load_aware",
+      "queue_ms": 1.0137439966201782,
+      "queue_mean_ms": 1.0137439966201782,
+      "queue_min_ms": 1.0137439966201782,
+      "queue_max_ms": 1.0137439966201782,
+      "selections": {
+        "compute:large": "B512_W4",
+        "compute:small": "B512_W4",
+        "idle:large": "B1024_W4",
+        "idle:small": "B1024_W4",
+        "memory:large": "B512_W4",
+        "memory:small": "B512_W4"
+      },
+      "speedup_vs_static_isolated": 0.9475528348695499,
+      "regret_vs_oracle_pct": 13.987840797988515
+    },
+    {
+      "policy": "resource_aware",
+      "queue_ms": 0.9555680155754089,
+      "queue_mean_ms": 0.9555680155754089,
+      "queue_min_ms": 0.9555680155754089,
+      "queue_max_ms": 0.9555680155754089,
+      "selections": {
+        "compute:large": "B512_W4",
+        "compute:small": "B512_W4",
+        "idle:large": "B1024_W4",
+        "idle:small": "B1024_W4",
+        "memory:large": "B512_W4",
+        "memory:small": "B1024_W4"
+      },
+      "speedup_vs_static_isolated": 1.0052408433229243,
+      "regret_vs_oracle_pct": 7.446391982797618
+    },
+    {
+      "policy": "oracle_context",
+      "queue_ms": 0.8893439769744873,
+      "queue_mean_ms": 0.8893439769744873,
+      "queue_min_ms": 0.8893439769744873,
+      "queue_max_ms": 0.8893439769744873,
+      "selections": {
+        "compute:large": "B512_W4",
+        "compute:small": "B512_W4",
+        "idle:large": "B1024_W4",
+        "idle:small": "B1024_W4",
+        "memory:large": "B512_W4",
+        "memory:small": "B1024_W4"
+      },
+      "speedup_vs_static_isolated": 1.0800950168879295,
+      "regret_vs_oracle_pct": 0.0
+    }
+  ],
+  "best_policy": {
+    "policy": "oracle_context",
+    "queue_ms": 0.8893439769744873,
+    "queue_mean_ms": 0.8893439769744873,
+    "queue_min_ms": 0.8893439769744873,
+    "queue_max_ms": 0.8893439769744873,
+    "selections": {
+      "compute:large": "B512_W4",
+      "compute:small": "B512_W4",
+      "idle:large": "B1024_W4",
+      "idle:small": "B1024_W4",
+      "memory:large": "B512_W4",
+      "memory:small": "B1024_W4"
+    },
+    "speedup_vs_static_isolated": 1.0800950168879295,
+    "regret_vs_oracle_pct": 0.0
+  },
+  "compile_cache_proxy": {
+    "first_invocation_min_ms": 73.29985103569925,
+    "first_invocation_median_ms": 369.57066651666537,
+    "first_invocation_max_ms": 665.8414819976315,
+    "first_invocation_total_ms": 739.1413330333307
+  },
+  "validation": [
+    {
+      "shape_label": "small",
+      "variant_id": "B1024_W4",
+      "finite_outputs": true,
+      "max_abs_diff_vs_torch": 0.00390625
+    },
+    {
+      "shape_label": "large",
+      "variant_id": "B1024_W4",
+      "finite_outputs": true,
+      "max_abs_diff_vs_torch": 0.00390625
+    }
+  ]
+}
